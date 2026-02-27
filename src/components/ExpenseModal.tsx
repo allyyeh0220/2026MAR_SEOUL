@@ -1,9 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { X, Wallet, Plus, CreditCard, Banknote, Smartphone, Calendar, Trash2 } from 'lucide-react';
-// ✅ 匯入 Firebase Firestore 功能
-import { db } from '../firebase'; // ⚠️ 請確認您的 firebase.ts 路徑是否正確
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, Timestamp } from "firebase/firestore";
 
 interface ExpenseModalProps {
   isOpen: boolean;
@@ -30,6 +27,8 @@ interface ExpenseItemProps {
 
 const ExpenseItem: React.FC<ExpenseItemProps> = ({ expense, onDelete, onEdit }) => {
   const x = useMotionValue(0);
+  const opacity = useTransform(x, [-100, -50], [1, 0]);
+  const deleteButtonOpacity = useTransform(x, [-100, -50], [1, 0]);
   const [isDragging, setIsDragging] = useState(false);
 
   const amountTWD = expense.currency === 'TWD' ? expense.amount : Math.round(expense.amount * EXCHANGE_RATE);
@@ -118,26 +117,23 @@ const ExpenseItem: React.FC<ExpenseItemProps> = ({ expense, onDelete, onEdit }) 
 export const ExpenseModal: React.FC<ExpenseModalProps> = ({ isOpen, onClose }) => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
 
-  // ✅ 修正後的資料讀取函數
-  const fetchExpenses = async () => {
-    try {
-      const q = query(collection(db, "expenses"), orderBy("date", "desc"));
-      const querySnapshot = await getDocs(q);
-      const data = querySnapshot.docs.map(doc => ({ 
-        id: doc.id, 
-        ...doc.data() 
-      })) as Expense[];
-      setExpenses(data);
-    } catch (error) {
-      console.error('Failed to fetch expenses:', error);
-    }
-  };
-
   useEffect(() => {
     if (isOpen) {
       fetchExpenses();
     }
   }, [isOpen]);
+
+  const fetchExpenses = async () => {
+    try {
+      const res = await fetch('/api/expenses');
+      if (res.ok) {
+        const data = await res.json();
+        setExpenses(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch expenses:', error);
+    }
+  };
 
   const [selectedDay, setSelectedDay] = useState<string>('All');
   const [isAdding, setIsAdding] = useState(false);
@@ -169,11 +165,11 @@ export const ExpenseModal: React.FC<ExpenseModalProps> = ({ isOpen, onClose }) =
     }, 0);
   }, [filteredExpenses]);
 
-  // ✅ 修正後的資料儲存函數
   const handleSaveExpense = async () => {
     if (!newTitle || !newAmount) return;
     
-    const expenseData = {
+    const expenseData: Expense = {
+      id: editingId || Date.now().toString(),
       title: newTitle,
       date: newDate,
       paymentMethod: newMethod,
@@ -184,25 +180,39 @@ export const ExpenseModal: React.FC<ExpenseModalProps> = ({ isOpen, onClose }) =
 
     try {
       if (editingId) {
-        // 更新資料
-        const expenseRef = doc(db, "expenses", editingId);
-        await updateDoc(expenseRef, expenseData);
+        const res = await fetch(`/api/expenses/${editingId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(expenseData),
+        });
+        if (res.ok) {
+          setExpenses(prev => prev.map(e => e.id === editingId ? expenseData : e));
+        }
       } else {
-        // 新增資料
-        await addDoc(collection(db, "expenses"), expenseData);
+        const res = await fetch('/api/expenses', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(expenseData),
+        });
+        if (res.ok) {
+          setExpenses(prev => [expenseData, ...prev]);
+        }
       }
       resetForm();
-      fetchExpenses(); // 重新讀取以同步
+      fetchExpenses(); // Refresh list to ensure sync
     } catch (error) {
       console.error('Failed to save expense:', error);
     }
   };
 
-  // ✅ 修正後的資料刪除函數
   const handleDeleteExpense = async (id: string) => {
     try {
-      await deleteDoc(doc(db, "expenses", id));
-      setExpenses(prev => prev.filter(e => e.id !== id));
+      const res = await fetch(`/api/expenses/${id}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        setExpenses(prev => prev.filter(e => e.id !== id));
+      }
     } catch (error) {
       console.error('Failed to delete expense:', error);
     }
