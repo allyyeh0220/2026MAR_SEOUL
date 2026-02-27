@@ -1,18 +1,15 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
-// Your web app's Firebase configuration
-// For this demo, we'll use environment variables.
-// Users should create a .env file with these values.
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID
+  apiKey: "AIzaSyChCKHJNjmaCpqrHDQ9X9K5a-XqzTdVqSY",
+  authDomain: "marseoul-65f46.firebaseapp.com",
+  projectId: "marseoul-65f46",
+  storageBucket: "marseoul-65f46.firebasestorage.app",
+  messagingSenderId: "571093867214",
+  appId: "1:571093867214:web:7d85d7227c9d7559c6ce9f",
+  measurementId: "G-VQDM1YM615"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);

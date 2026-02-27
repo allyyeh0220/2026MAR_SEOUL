@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { db } from '../lib/firebase';
-import { collection, getDocs } from "firebase/firestore";
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { X, Wallet, Plus, CreditCard, Banknote, Smartphone, Calendar, Trash2 } from 'lucide-react';
+import { db } from '../lib/firebase';
+import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, orderBy } from 'firebase/firestore';
 
 interface ExpenseModalProps {
   isOpen: boolean;
@@ -127,25 +127,17 @@ export const ExpenseModal: React.FC<ExpenseModalProps> = ({ isOpen, onClose }) =
 
   const fetchExpenses = async () => {
     try {
-    // 引用資料庫中的 "expenses" 集合
-    const expensesCollection = collection(db, "expenses");
-    
-    // 獲取資料
-    const querySnapshot = await getDocs(expensesCollection);
-    
-    // 整理資料格式
-    const data = querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    })) as Expense[];
-    
-    // 更新狀態
-    setExpenses(data);
-    
-  } catch (error) { // 這是對應第 145 行的 catch
-    console.error('Failed to fetch expenses from Firebase:', error);
-  } // 這是對應 try 的結束括號
-}; // 這是對應整個函數的結束括號
+      const q = query(collection(db, "expenses"), orderBy("date", "desc"));
+      const querySnapshot = await getDocs(q);
+      const data: Expense[] = [];
+      querySnapshot.forEach((doc) => {
+        data.push({ id: doc.id, ...doc.data() } as Expense);
+      });
+      setExpenses(data);
+    } catch (error) {
+      console.error('Failed to fetch expenses:', error);
+    }
+  };
 
   const [selectedDay, setSelectedDay] = useState<string>('All');
   const [isAdding, setIsAdding] = useState(false);
@@ -180,8 +172,7 @@ export const ExpenseModal: React.FC<ExpenseModalProps> = ({ isOpen, onClose }) =
   const handleSaveExpense = async () => {
     if (!newTitle || !newAmount) return;
     
-    const expenseData: Expense = {
-      id: editingId || Date.now().toString(),
+    const expenseData = {
       title: newTitle,
       date: newDate,
       paymentMethod: newMethod,
@@ -192,23 +183,12 @@ export const ExpenseModal: React.FC<ExpenseModalProps> = ({ isOpen, onClose }) =
 
     try {
       if (editingId) {
-        const res = await fetch(`/api/expenses/${editingId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(expenseData),
-        });
-        if (res.ok) {
-          setExpenses(prev => prev.map(e => e.id === editingId ? expenseData : e));
-        }
+        const expenseRef = doc(db, "expenses", editingId);
+        await updateDoc(expenseRef, expenseData);
+        setExpenses(prev => prev.map(e => e.id === editingId ? { ...e, ...expenseData } : e));
       } else {
-        const res = await fetch('/api/expenses', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(expenseData),
-        });
-        if (res.ok) {
-          setExpenses(prev => [expenseData, ...prev]);
-        }
+        const docRef = await addDoc(collection(db, "expenses"), expenseData);
+        setExpenses(prev => [{ id: docRef.id, ...expenseData } as Expense, ...prev]);
       }
       resetForm();
       fetchExpenses(); // Refresh list to ensure sync
@@ -219,12 +199,8 @@ export const ExpenseModal: React.FC<ExpenseModalProps> = ({ isOpen, onClose }) =
 
   const handleDeleteExpense = async (id: string) => {
     try {
-      const res = await fetch(`/api/expenses/${id}`, {
-        method: 'DELETE',
-      });
-      if (res.ok) {
-        setExpenses(prev => prev.filter(e => e.id !== id));
-      }
+      await deleteDoc(doc(db, "expenses", id));
+      setExpenses(prev => prev.filter(e => e.id !== id));
     } catch (error) {
       console.error('Failed to delete expense:', error);
     }
@@ -273,7 +249,7 @@ export const ExpenseModal: React.FC<ExpenseModalProps> = ({ isOpen, onClose }) =
             {/* Header */}
             <div className="flex justify-between items-center mb-6 shrink-0">
               <h3 className="text-xl font-bold text-k-coffee font-serif tracking-wide">
-                {isAdding ? (editingId ? '編輯記帳' : '新增記帳') : '以路的旅行記帳'}
+                {isAdding ? (editingId ? '編輯記帳' : '新增記帳') : '旅遊記帳'}
               </h3>
               <button onClick={onClose} className="p-2 bg-k-coffee/5 rounded-full hover:bg-k-coffee/10 transition-colors">
                 <X className="w-5 h-5 text-k-coffee" />
