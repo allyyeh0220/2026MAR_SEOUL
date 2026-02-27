@@ -82,13 +82,8 @@ export const ItineraryCard: React.FC<ItineraryCardProps> = ({ item, onClick }) =
 
             {/* Reservation Badge */}
             {item.isReservation && (
-              <div className="inline-flex items-center gap-1 text-xs font-bold text-[#D32F2F] mt-1 font-sans">
-                {/* Clock icon removed from import if not used elsewhere, but kept in JSX if needed. 
-                    Wait, I removed Clock from import. Let's check if it's used. 
-                    Yes, line 84 uses Clock. I need to keep Clock in imports or remove it. 
-                    The original code had Clock. I should keep it.
-                */}
-                <span className="text-[10px] border border-[#D32F2F] px-1.5 py-0.5 rounded-md">需預約</span>
+              <div className="inline-flex items-center gap-1 text-xs font-bold text-[#2E7D32] mt-1 font-sans">
+                <span className="text-[10px] border border-[#2E7D32] px-1.5 py-0.5 rounded-md">已預約</span>
               </div>
             )}
           </div>

@@ -21,7 +21,7 @@ export interface ItineraryItem {
   cost?: string;
   isReservation?: boolean;
   highlight?: string[]; // "Must Eat", "Must Buy"
-  menuRecommendations?: { nameCN: string; nameKR: string; imageUrl?: string }[];
+  menuRecommendations?: { nameCN: string; nameKR: string; imageUrl?: string; price?: string; isRecommended?: boolean }[];
   shoppingList?: (string | ShoppingItem)[];
   image?: string;
   images?: string[]; // For carousel
@@ -56,6 +56,8 @@ export interface ItineraryItem {
     address?: string;
   };
   pdfUrl?: string;
+  isSeparateSection?: boolean;
+  sectionTitle?: string;
 }
 
 export interface HeroImage {
@@ -195,9 +197,9 @@ export const itineraryData: DaySchedule[] = [
         naverMapLink: "https://naver.me/5pwzFlUw",
         highlight: ["必吃美食"],
         menuRecommendations: [
-          { nameCN: "豬肉湯飯", nameKR: "돼지국밥" },
-          { nameCN: "血腸湯飯", nameKR: "순대국밥" },
-          { nameCN: "白切肉", nameKR: "수육" }
+          { nameCN: "豬肉湯飯", nameKR: "돼지곰탕 대표", price: "11,000 KRW" },
+          { nameCN: "白菜餃子(4個)", nameKR: "배추만두 4pc", price: "8,000 KRW" },
+          { nameCN: "冷切肉", nameKR: "냉제육", price: "10,000 KRW" }
         ]
       },
       {
@@ -236,6 +238,11 @@ export const itineraryData: DaySchedule[] = [
         naverMapLink: "https://naver.me/Gq846rr8",
         highlight: ["景觀咖啡"],
         menuRecommendations: [
+          { 
+            nameCN: "可朗芙", 
+            nameKR: "크로플", 
+            price: "16,000 KRW"
+          },
           { nameCN: "冰美式", nameKR: "아이스 아메리카노" },
           { nameCN: "巴斯克蛋糕", nameKR: "바스크 치즈 케이크" },
           { nameCN: "拿鐵", nameKR: "카페 라떼" }
@@ -260,6 +267,7 @@ export const itineraryData: DaySchedule[] = [
         naverMapLink: "https://naver.me/5R45gjI1",
         highlight: ["必吃美食"],
         menuRecommendations: [
+          { nameCN: "炸豬腳套餐", nameKR: "족발튀김 한상", price: "49,000 KRW", isRecommended: true },
           { nameCN: "半半豬腳", nameKR: "반반족발" },
           { nameCN: "拳頭飯", nameKR: "주먹밥" },
           { nameCN: "生菜包肉", nameKR: "보쌈" }
@@ -289,31 +297,26 @@ export const itineraryData: DaySchedule[] = [
               {
                 name: "MEDIHEAL Toner Pad 100+100 Pads Double Pack",
                 url: "https://global.oliveyoung.com/product/detail?prdtNo=GA220815950",
-                price: "₩39,000 / NT$920",
                 image: "https://cdn-image.oliveyoung.com/prdtImg/1447/a9d9f616-1d1b-4596-83b6-e3cdad4f9892.png?RS=1500x1500&AR=0&SF=webp&QT=80"
               },
               {
                 name: "SKIN1004 Madagascar Centella Hyalu-Cica Water-Fit Sun Serum",
                 url: "https://global.oliveyoung.com/product/detail?prdtNo=GA230518746",
-                price: "₩26,000 / NT$610",
                 image: "https://cdn-image.oliveyoung.com/prdtImg/1595/6290bfe2-63de-4724-9e18-b27eb424964e.jpg?RS=1500x1500&AR=0&SF=webp&QT=80"
               },
               {
                 name: "CLIO Kill Cover Founwear Cushion (+Refill)",
                 url: "https://global.oliveyoung.com/product/detail?prdtNo=GA250832751",
-                price: "₩38,000 / NT$900",
                 image: "https://cdn-image.oliveyoung.com/prdtImg/1234/cd4f4a36-5edc-40d9-b97f-b291abff368f.png?RS=1500x1500&AR=0&SF=webp&QT=80"
               },
               {
                 name: "ongredients Skin Barrier Calming Large Size Set",
                 url: "https://global.oliveyoung.com/product/detail?prdtNo=GA250631392",
-                price: "₩42,000 / NT$990",
                 image: "https://cdn-image.oliveyoung.com/prdtImg/1200/9ca6a20e-ba3a-47e0-9145-8617563f15d1.png?RS=1500x1500&AR=0&SF=webp&QT=80"
               },
               {
                 name: "Abib Mild Acidic pH Sheet Mask (10 sheet)",
                 url: "https://global.oliveyoung.com/product/detail?prdtNo=GA210001052&dataSource=search_result",
-                price: "₩24,000 / NT$570",
                 image: "https://cdn-image.oliveyoung.com/prdtImg/1733/8459ffbe-aa55-406e-b16a-3b99046975ec.jpg?RS=1500x1500&AR=0&SF=webp&QT=80"
               }
             ]
@@ -333,6 +336,11 @@ export const itineraryData: DaySchedule[] = [
     day: 2,
     date: "2026-03-25",
     weekday: "週三",
+    heroImages: [
+      { url: "https://lh3.googleusercontent.com/gps-cs-s/AHVAwepHgN9SrEfT60r2JUe3fgWGvwffQ8fsXx9h_Od-sBq77s2RV-HfMhVmZohg7Au0lxz7bkhTf-iTuYBzIAVZAFECDktCwVHpoHyxQ3YaWsDGrA_lnVZafLa_5Sl1II7EGYYKxerc=w1024", caption: "安國站" },
+      { url: "https://lh3.googleusercontent.com/gps-cs-s/AHVAweqjBwem5sCFJxddihjifFAnJBcyPPyj33TE1St0EHYIZ1p1vGSAlzpDllKIhIL0xXYlj8Xb7VZ0BOxUINCftK0ncAfeMrD5JwFdgTFNqWpN4aCR9irUPNBJUZgitbzTDR-9TIucfg=w1024", caption: "北村韓屋" },
+      { url: "https://lh3.googleusercontent.com/gps-cs-s/AHVAweq8--uvof6qrhgiW22jFV-b5KbSXcUmsV8CnBKYCNyMlsx9z9MHhWO7XGMSoYDB7KVkvPPgbce2VCAPHWSPkWpMf4JCzGTaOwXgz0KOd0CYG11VaOAPKeoMDeXb5oxzYxt0ayz5=w1024", caption: "西巡邏街" }
+    ],
     items: [
       {
         id: "d2-0",
@@ -384,7 +392,7 @@ export const itineraryData: DaySchedule[] = [
         naverMapLink: "https://naver.me/5vcHnm5u",
         highlight: ["必吃美食"],
         menuRecommendations: [
-          { nameCN: "人蔘雞湯", nameKR: "삼계탕" }
+          { nameCN: "北韓式蔘雞湯定食", nameKR: "이북식 삼계백반", price: "18,000 KRW", isRecommended: true }
         ]
       },
       {
@@ -392,7 +400,12 @@ export const itineraryData: DaySchedule[] = [
         time: "13:00",
         title: "行程：安國站逛街",
         type: "sight",
-        location: "Anguk Station"
+        location: "Anguk Station",
+        shoppingList: [
+          "GRANHAND",
+          "TOUT Y EST",
+          "Verish Anguk"
+        ]
       },
       {
         id: "d2-6",
@@ -434,8 +447,8 @@ export const itineraryData: DaySchedule[] = [
         naverMapLink: "https://naver.me/xa5RZUOP",
         highlight: ["必吃美食"],
         menuRecommendations: [
-          { nameCN: "辣炒年糕", nameKR: "떡볶이" },
-          { nameCN: "炸物拼盤", nameKR: "모듬튀김" }
+          { nameCN: "玫瑰醬辣炒年糕", nameKR: "로제 떡볶이", price: "19,000 KRW", isRecommended: true },
+          { nameCN: "生菜炸物", nameKR: "상추튀김", price: "10,000 KRW", isRecommended: true }
         ]
       },
       {
@@ -453,6 +466,11 @@ export const itineraryData: DaySchedule[] = [
     day: 3,
     date: "2026-03-26",
     weekday: "週四",
+    heroImages: [
+      { url: "https://travel-tw.line-scdn.net/r/travel/content/21a700b4-a024-4e20-b8f1-ab50ef41b15bt1365c12f", caption: "聖水洞" },
+      { url: "https://lh5.googleusercontent.com/proxy/2OS7e3Ir3G9ZlhIg5cBK9YxY1IJLeyelBqMG6a1ZZvqh53SzUev0iE-mxJSzE8dS-EzomjSE7h0blK95yRibFA73CzHCi1qlXWJKRQ", caption: "首爾林" },
+      { url: "https://www.bring-you.info/imgs/2019/01/dongdaemun-3-900x600.jpg", caption: "東大門" }
+    ],
     items: [
       {
         id: "d3-0",
@@ -480,8 +498,9 @@ export const itineraryData: DaySchedule[] = [
         naverMapLink: "https://naver.me/5iTdPV9Z",
         highlight: ["必吃美食"],
         menuRecommendations: [
-          { nameCN: "水芹菜牛肉湯", nameKR: "미나리 곰탕" },
-          { nameCN: "生拌牛肉", nameKR: "육회" }
+          { nameCN: "水芹菜牛肉湯", nameKR: "능동미나리곰탕", price: "15,000 KRW" },
+          { nameCN: "水芹菜牛肉餅(半份)", nameKR: "능동육전 반접시", price: "13,000 KRW" },
+          { nameCN: "水芹菜生拌牛肉拌飯", nameKR: "능동육회비빔밥", price: "15,000 KRW" }
         ]
       },
       {
@@ -490,7 +509,20 @@ export const itineraryData: DaySchedule[] = [
         title: "行程：聖水洞逛街",
         type: "shopping",
         location: "Seongsu-dong Cafe Street",
-        koreanAddress: "서울 성동구 성수동"
+        koreanAddress: "서울 성동구 성수동",
+        shoppingList: [
+          "KHIHO SEONGSU STORE",
+          "Beidelli 女裝",
+          "NYU NYU Girls",
+          "Musinsa Standard",
+          "SUARE 男裝",
+          "hetras seongsu",
+          "INDIBRAND 女裝",
+          "pureda女裝",
+          "대발견Socks&legwear",
+          "consume product女裝",
+          "29cm.home家飾/燈"
+        ]
       },
       {
         id: "d3-4",
@@ -512,7 +544,11 @@ export const itineraryData: DaySchedule[] = [
         type: "food",
         location: "LowKey Seongsu",
         koreanAddress: "서울 성동구 연무장3길 6 1층, B1층",
-        naverMapLink: "https://naver.me/5N15kFIf"
+        naverMapLink: "https://naver.me/5N15kFIf",
+        menuRecommendations: [
+          { nameCN: "香草拿鐵", nameKR: "바닐라라떼", price: "7,000 KRW" },
+          { nameCN: "焦糖奶油拿鐵", nameKR: "카라멜크림라떼", price: "7,800 KRW" }
+        ]
       },
       {
         id: "d3-6",
@@ -527,7 +563,16 @@ export const itineraryData: DaySchedule[] = [
         time: "16:00",
         title: "行程：首爾林逛街",
         type: "shopping",
-        location: "Seoul Forest"
+        location: "Seoul Forest",
+        shoppingList: [
+          "aeyiostudio 品牌配件店",
+          "Juuneedu Showroom 睡衣",
+          "Bite me寵物用品",
+          "ENUFF 純銀飾品",
+          "KWANGYA偶像周邊",
+          "somewhere butter.服飾",
+          "*Archivépke"
+        ]
       },
       {
         id: "d3-8",
@@ -540,7 +585,8 @@ export const itineraryData: DaySchedule[] = [
         naverMapLink: "https://naver.me/xQe2wLdj",
         highlight: ["必吃美食"],
         menuRecommendations: [
-          { nameCN: "一隻雞", nameKR: "닭한마리" }
+          { nameCN: "一隻雞", nameKR: "닭한마리", price: "33,000 KRW" },
+          { nameCN: "麵條", nameKR: "국수사리", price: "2,000 KRW" }
         ]
       },
       {
@@ -553,7 +599,7 @@ export const itineraryData: DaySchedule[] = [
         koreanAddress: "서울 중구 장충단로13길 7 1층",
         naverMapLink: "https://naver.me/IgJC0bG9",
         menuRecommendations: [
-          { nameCN: "鳥屎豆沙包", nameKR: "조사 찐빵" }
+          { nameCN: "豆沙包(3個)", nameKR: "찐빵 3개", price: "6,000 KRW" }
         ]
       },
       {
@@ -573,6 +619,11 @@ export const itineraryData: DaySchedule[] = [
     day: 4,
     date: "2026-03-27",
     weekday: "週五",
+    heroImages: [
+      { url: "https://tong.visitkorea.or.kr/cms/resource/10/2780610_image2_1.png", caption: "水聲洞" },
+      { url: "https://tong.visitkorea.or.kr/cms/resource_etc/76/3113276_image2_1.jpg", caption: "西村" },
+      { url: "https://blog-static.kkday.com/zh-tw/blog/wp-content/uploads/2022/09/Korea_Seoul_N-Seoul-Tower_Ashutterstock_779041270.jpg", caption: "南山纜車" }
+    ],
     items: [
       {
         id: "d4-0",
@@ -592,8 +643,9 @@ export const itineraryData: DaySchedule[] = [
         naverMapLink: "https://naver.me/xs3GFNuL",
         highlight: ["必吃美食"],
         menuRecommendations: [
-          { nameCN: "刀削麵", nameKR: "칼국수" },
-          { nameCN: "海鮮煎餅", nameKR: "해물파전" }
+          { nameCN: "同竹蛤蜊刀削麵", nameKR: "동죽칼국수", price: "10,000 KRW" },
+          { nameCN: "章魚海鮮煎餅", nameKR: "낙지해물파전", price: "15,000 KRW" },
+          { nameCN: "同竹蛤蜊湯", nameKR: "물총조개탕", price: "12,000 KRW" }
         ]
       },
       {
@@ -620,7 +672,7 @@ export const itineraryData: DaySchedule[] = [
         koreanAddress: "서울 종로구 옥인6길 2 1F",
         naverMapLink: "https://naver.me/5dudL6Iv",
         menuRecommendations: [
-          { nameCN: "紅豆奶油麵包", nameKR: "앙버터" }
+          { nameCN: "仁王山司康(4種)", nameKR: "인왕산 스콘 4종", price: "3,900 KRW" }
         ]
       },
       {
@@ -631,7 +683,11 @@ export const itineraryData: DaySchedule[] = [
         description: "弼雲洞 洪建翊家屋、青瓦台文藝館、保安旅館、Ground Seesaw展覽",
         location: "Seochon Village",
         koreanAddress: "서울 종로구 필운대로",
-        notes: "洪建翊家屋: https://naver.me/x0UEt1xe, 青瓦台文藝館: https://naver.me/xY4sobj8, 保安旅館: https://naver.me/53lKU0do, Ground Seesaw: https://naver.me/GEXhmVi6"
+        notes: "洪建翊家屋: https://naver.me/x0UEt1xe, 青瓦台文藝館: https://naver.me/xY4sobj8, 保安旅館: https://naver.me/53lKU0do, Ground Seesaw: https://naver.me/GEXhmVi6",
+        shoppingList: [
+          "0fr. Séoul 書店",
+          "모노하 서촌 (MONOHA Seochon) 女裝"
+        ]
       },
       {
         id: "d4-6",
@@ -652,7 +708,7 @@ export const itineraryData: DaySchedule[] = [
         isReservation: true,
         highlight: ["重要預約代號", "必吃美食"],
         menuRecommendations: [
-          { nameCN: "黑豬肉", nameKR: "흑돼지" }
+          { nameCN: "傳統鹽烤黑豬肉", nameKR: "재래식 소금구이", price: "59,000 KRW" }
         ]
       },
       {
@@ -672,6 +728,11 @@ export const itineraryData: DaySchedule[] = [
     day: 5,
     date: "2026-03-28",
     weekday: "週六",
+    heroImages: [
+      { url: "https://rainieis.tw/wp-content/uploads/2024/03/DSC01908.jpg", caption: "延南洞" },
+      { url: "https://tchinese.seoul.go.kr/wp-content/uploads/2020/08/mangwon-market-4.jpg", caption: "望遠市場" },
+      { url: "https://tchinese.seoul.go.kr/wp-content/uploads/2017/09/Mangwon_dong_1.jpg", caption: "望遠洞" }
+    ],
     items: [
       {
         id: "d5-0",
@@ -699,7 +760,7 @@ export const itineraryData: DaySchedule[] = [
         naverMapLink: "https://naver.me/FBe2dOpb",
         isReservation: true,
         menuRecommendations: [
-          { nameCN: "烤鰻魚", nameKR: "장어구이" }
+          { nameCN: "烤鰻魚(2隻)", nameKR: "장어 2마리", price: "74,000 KRW" }
         ]
       },
       {
@@ -708,7 +769,12 @@ export const itineraryData: DaySchedule[] = [
         title: "行程：望遠洞 (망원동)",
         type: "sight",
         location: "Mangwon Market",
-        koreanAddress: "서울 마포구 망원동"
+        koreanAddress: "서울 마포구 망원동",
+        shoppingList: [
+          "Warmgreytail 可愛毛巾店",
+          "Viva Salon玩具小店",
+          "oFong 飾品小店"
+        ]
       },
       {
         id: "d5-4",
@@ -725,11 +791,77 @@ export const itineraryData: DaySchedule[] = [
         ]
       },
       {
+        id: "d5-new-1",
+        time: "16:00",
+        title: "行程：延南洞逛街",
+        type: "shopping",
+        location: "Yeonnam-dong",
+        shoppingList: [
+          "mill and moi 밀앤모이狗狗文創店",
+          "VISUAL AID 女裝",
+          "Made by 文創小物店"
+        ]
+      },
+      {
+        id: "d5-new-2",
+        time: "17:00",
+        title: "點心：JO & DAWSON法式吐司 (조앤도슨 연남본점)",
+        type: "food",
+        description: "營業時間：10:00–20:00",
+        location: "JO & DAWSON Yeonnam",
+        koreanAddress: "서울 마포구 동교로41길 31 지층 좌측, 조앤도슨",
+        naverMapLink: "https://naver.me/FcmA3eDy",
+        menuRecommendations: [
+          { nameCN: "經典法式吐司", nameKR: "Classic French Toast", price: "10,000 KRW" },
+          { nameCN: "奶茶", nameKR: "Milktea", price: "7,000 KRW" }
+        ]
+      },
+      {
+        id: "d5-new-3",
+        time: "19:00",
+        title: "行程：女人街逛街",
+        type: "shopping",
+        location: "Ewha Womans University Shopping Street",
+        shoppingList: [
+          "lune 女裝",
+          "Market a 女裝",
+          "I am Joy 女裝",
+          "LOOF 女裝",
+          "Aver Haus 女裝",
+          "Revoir Custom Brush 刷具店"
+        ]
+      },
+      {
+        id: "d5-8",
+        time: "21:00",
+        title: "住宿：Dream House (드림하우스)",
+        type: "accommodation",
+        description: "Check in: 14:00",
+        location: "Dream House",
+        koreanAddress: "서울 마포구 잔다리로 78",
+        naverMapLink: "https://naver.me/5UEKKlyq",
+        images: [
+          "https://pix8.agoda.net/property/37407728/1255392406/c44c6a95bfb0df2d22a528dd509a7c15.jpeg?ce=2&s=1024x"
+        ],
+        bookingInfo: {
+          bookingId: "1689219615",
+          roomType: "Double Room",
+          checkIn: "2026-03-28 14:00",
+          checkOut: "2026-03-29 11:00",
+          guests: 1,
+          price: "KRW 112,183",
+          policy: "免費取消期限：2026/03/21",
+          address: "78, Jandari-ro, Mapo-gu, Seoul"
+        }
+      },
+      {
         id: "d5-5",
         time: "16:00",
         title: "地鐵：弘大站 -> 仁川機場 一航",
         type: "transport",
-        description: "淺藍 空港線 車程：70m"
+        description: "淺藍 空港線 車程：70m",
+        isSeparateSection: true,
+        sectionTitle: "HUSBAND'S FLIGHT"
       },
       {
         id: "d5-6",
@@ -744,16 +876,6 @@ export const itineraryData: DaySchedule[] = [
         title: "老公班機起飛",
         type: "transport",
         description: "仁川國際機場 Terminal 1"
-      },
-      {
-        id: "d5-8",
-        time: "21:00",
-        title: "住宿：Dream House (드림하우스)",
-        type: "accommodation",
-        description: "Check in: 14:00",
-        location: "Dream House",
-        koreanAddress: "서울 마포구 잔다리로 78",
-        naverMapLink: "https://naver.me/5UEKKlyq"
       }
     ]
   },
@@ -761,6 +883,9 @@ export const itineraryData: DaySchedule[] = [
     day: 6,
     date: "2026-03-29",
     weekday: "週日",
+    heroImages: [
+      { url: "https://rainieis.tw/wp-content/uploads/DSC02019.jpg", caption: "弘大商圈" }
+    ],
     items: [
       {
         id: "d6-0",

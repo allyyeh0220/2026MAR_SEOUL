@@ -34,10 +34,15 @@ export function WeatherWidget() {
   };
 
   return (
-    <div className="flex items-center gap-2 bg-white/50 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm border border-k-coffee/5 text-sm font-bold text-k-coffee">
+    <a 
+      href="https://weather.com/weather/today/l/KSXX0037:1:KS"
+      target="_blank"
+      rel="noreferrer"
+      className="flex items-center gap-2 bg-white/50 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm border border-k-coffee/5 text-sm font-bold text-k-coffee hover:bg-white/80 transition-colors cursor-pointer"
+    >
       {getWeatherIcon(weather.weather_code)}
       <span className="font-mono">{weather.temperature_2m}°C</span>
       <span className="text-xs text-k-coffee/50 ml-1">首爾</span>
-    </div>
+    </a>
   );
 }

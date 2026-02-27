@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { X, Wallet, Plus, CreditCard, Banknote, Smartphone, Calendar, Trash2 } from 'lucide-react';
 
@@ -115,13 +115,25 @@ const ExpenseItem: React.FC<ExpenseItemProps> = ({ expense, onDelete, onEdit }) 
 };
 
 export const ExpenseModal: React.FC<ExpenseModalProps> = ({ isOpen, onClose }) => {
-  const [expenses, setExpenses] = useState<Expense[]>([
-    { id: '1', title: 'AREX 機場快線', date: '2026-03-24', paymentMethod: '信用卡', amount: 13000, currency: 'KRW', taxRefund: '無' },
-    { id: '2', title: '豬肉湯飯午餐', date: '2026-03-24', paymentMethod: '現金', amount: 25000, currency: 'KRW', taxRefund: '無' },
-    { id: '3', title: '咖啡', date: '2026-03-24', paymentMethod: '行動支付', amount: 12000, currency: 'KRW', taxRefund: '無' },
-    { id: '4', title: '行前保險', date: '2026-03-20', paymentMethod: '信用卡', amount: 1200, currency: 'TWD', taxRefund: '無' },
-    { id: '5', title: 'Olive Young 採買', date: '2026-03-25', paymentMethod: '信用卡', amount: 150000, currency: 'KRW', taxRefund: '已退稅' },
-  ]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchExpenses();
+    }
+  }, [isOpen]);
+
+  const fetchExpenses = async () => {
+    try {
+      const res = await fetch('/api/expenses');
+      if (res.ok) {
+        const data = await res.json();
+        setExpenses(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch expenses:', error);
+    }
+  };
 
   const [selectedDay, setSelectedDay] = useState<string>('All');
   const [isAdding, setIsAdding] = useState(false);
@@ -153,7 +165,7 @@ export const ExpenseModal: React.FC<ExpenseModalProps> = ({ isOpen, onClose }) =
     }, 0);
   }, [filteredExpenses]);
 
-  const handleSaveExpense = () => {
+  const handleSaveExpense = async () => {
     if (!newTitle || !newAmount) return;
     
     const expenseData: Expense = {
@@ -166,17 +178,44 @@ export const ExpenseModal: React.FC<ExpenseModalProps> = ({ isOpen, onClose }) =
       taxRefund: newTaxRefund,
     };
 
-    if (editingId) {
-      setExpenses(prev => prev.map(e => e.id === editingId ? expenseData : e));
-    } else {
-      setExpenses(prev => [expenseData, ...prev]);
+    try {
+      if (editingId) {
+        const res = await fetch(`/api/expenses/${editingId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(expenseData),
+        });
+        if (res.ok) {
+          setExpenses(prev => prev.map(e => e.id === editingId ? expenseData : e));
+        }
+      } else {
+        const res = await fetch('/api/expenses', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(expenseData),
+        });
+        if (res.ok) {
+          setExpenses(prev => [expenseData, ...prev]);
+        }
+      }
+      resetForm();
+      fetchExpenses(); // Refresh list to ensure sync
+    } catch (error) {
+      console.error('Failed to save expense:', error);
     }
-
-    resetForm();
   };
 
-  const handleDeleteExpense = (id: string) => {
-    setExpenses(prev => prev.filter(e => e.id !== id));
+  const handleDeleteExpense = async (id: string) => {
+    try {
+      const res = await fetch(`/api/expenses/${id}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        setExpenses(prev => prev.filter(e => e.id !== id));
+      }
+    } catch (error) {
+      console.error('Failed to delete expense:', error);
+    }
   };
 
   const handleEditExpense = (expense: Expense) => {
@@ -222,7 +261,7 @@ export const ExpenseModal: React.FC<ExpenseModalProps> = ({ isOpen, onClose }) =
             {/* Header */}
             <div className="flex justify-between items-center mb-6 shrink-0">
               <h3 className="text-xl font-bold text-k-coffee font-serif tracking-wide">
-                {isAdding ? (editingId ? '編輯記帳' : '新增記帳') : '旅行記帳'}
+                {isAdding ? (editingId ? '編輯記帳' : '新增記帳') : '以路的旅行記帳'}
               </h3>
               <button onClick={onClose} className="p-2 bg-k-coffee/5 rounded-full hover:bg-k-coffee/10 transition-colors">
                 <X className="w-5 h-5 text-k-coffee" />

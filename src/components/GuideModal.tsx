@@ -10,7 +10,7 @@ interface GuideModalProps {
 }
 
 interface DishModalProps {
-  dish: { nameCN: string; nameKR: string; imageUrl?: string };
+  dish: { nameCN: string; nameKR: string; imageUrl?: string; price?: string; isRecommended?: boolean };
   isOpen: boolean;
   onClose: () => void;
 }
@@ -38,17 +38,22 @@ const DishModal = ({ dish, isOpen, onClose }: DishModalProps) => {
                 <X className="w-5 h-5 text-gray-600" />
               </button>
               
-              <div className="aspect-square bg-gray-100 rounded-[15px] mb-4 overflow-hidden">
-                <img 
-                  src={dish.imageUrl || `https://picsum.photos/seed/${dish.nameKR}/400/400`} 
-                  alt={dish.nameCN}
-                  className="w-full h-full object-cover"
-                />
-              </div>
+              {dish.imageUrl && (
+                <div className="aspect-square bg-gray-100 rounded-[15px] mb-4 overflow-hidden">
+                  <img 
+                    src={dish.imageUrl} 
+                    alt={dish.nameCN}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
               
               <div className="text-center space-y-2">
                 <h3 className="text-2xl font-bold text-gray-900">{dish.nameKR}</h3>
                 <p className="text-lg text-gray-500 font-medium">{dish.nameCN}</p>
+                {dish.price && (
+                  <p className="text-xl font-bold text-k-coffee mt-2">{dish.price}</p>
+                )}
                 <p className="text-xs text-gray-400 mt-4">請出示此畫面給店員看</p>
               </div>
             </motion.div>
@@ -60,7 +65,7 @@ const DishModal = ({ dish, isOpen, onClose }: DishModalProps) => {
 };
 
 export function GuideModal({ item, isOpen, onClose }: GuideModalProps) {
-  const [selectedDish, setSelectedDish] = useState<{ nameCN: string; nameKR: string; imageUrl?: string } | null>(null);
+  const [selectedDish, setSelectedDish] = useState<{ nameCN: string; nameKR: string; imageUrl?: string; price?: string; isRecommended?: boolean } | null>(null);
 
   const getCategoryInfo = (type: string) => {
     switch (type) {
@@ -79,12 +84,8 @@ export function GuideModal({ item, isOpen, onClose }: GuideModalProps) {
   const displayLabel = isFlight ? 'FLIGHT' : label;
   const displayColor = isFlight ? 'bg-[#cdc8c3]' : color;
 
-  // Mock images for carousel if not provided
-  const displayImages = item.images || item.menuRecommendations?.map(m => m.imageUrl || `https://picsum.photos/seed/${m.nameKR}/400/300`) || [
-    `https://picsum.photos/seed/${item.id}-1/400/300`,
-    `https://picsum.photos/seed/${item.id}-2/400/300`,
-    `https://picsum.photos/seed/${item.id}-3/400/300`
-  ];
+  // Only show images if explicitly provided
+  const displayImages = item.images || [];
 
   return (
     <AnimatePresence>
@@ -139,17 +140,32 @@ export function GuideModal({ item, isOpen, onClose }: GuideModalProps) {
                 )}
               </div>
 
-              {/* Navigation Buttons - Naver Map Only */}
-              {item.naverMapLink && (
+              {/* Navigation Buttons - Naver Map */}
+              {(item.naverMapLink || item.type === 'sight') && (
                 <div className="mb-8">
                   <a
-                    href={item.naverMapLink}
+                    href={item.naverMapLink || `https://map.naver.com/p/search/${encodeURIComponent(item.koreanAddress || item.location || item.title)}`}
                     target="_blank"
                     rel="noreferrer"
                     className="flex items-center justify-center gap-2 w-full py-3.5 bg-[#03C75A] text-white rounded-[15px] font-bold hover:bg-[#02b351] transition-colors shadow-lg shadow-[#03C75A]/20"
                   >
                     <MapPin className="w-4 h-4" />
                     開啟 Naver Map
+                  </a>
+                </div>
+              )}
+
+              {/* Bus Map Button */}
+              {item.type === 'transport' && item.title.includes('公車') && (
+                <div className="mb-8">
+                  <a
+                    href="https://bus.go.kr/app/#viewpage/1000001/main.nearbusinfo/1/title=Home%20%EB%B2%84%EC%8A%A4%EC%A0%95%EB%B3%B4"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center justify-center gap-2 w-full py-3.5 bg-[#4A90E2] text-white rounded-[15px] font-bold hover:bg-[#357ABD] transition-colors shadow-lg shadow-[#4A90E2]/20"
+                  >
+                    <Bus className="w-4 h-4" />
+                    查詢公車地圖
                   </a>
                 </div>
               )}
@@ -266,7 +282,11 @@ export function GuideModal({ item, isOpen, onClose }: GuideModalProps) {
                       <button
                         key={index}
                         onClick={() => setSelectedDish(dish)}
-                        className="w-full flex items-center justify-between p-4 bg-white rounded-[15px] border border-k-coffee/5 shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
+                        className={`w-full flex items-center justify-between p-4 bg-white rounded-[15px] shadow-sm hover:shadow-md transition-all active:scale-[0.98] ${
+                          dish.isRecommended 
+                            ? 'border-2 border-[#f4af63] ring-1 ring-[#f4af63]/20' 
+                            : 'border border-k-coffee/5'
+                        }`}
                       >
                         <span className="font-bold text-k-coffee text-sm">{dish.nameCN}</span>
                         <div className="flex-1 border-b border-dashed border-k-coffee/10 mx-4" />
@@ -277,14 +297,14 @@ export function GuideModal({ item, isOpen, onClose }: GuideModalProps) {
                 </div>
               )}
 
-              {/* 2.5 Shopping List (Only for Shopping) */}
-              {item.type === 'shopping' && item.shoppingList && (
+              {/* 2.5 Shopping List (Any Type) */}
+              {item.shoppingList && (
                 <div className="mb-8">
                   <h3 className="text-sm font-bold text-k-coffee/40 uppercase tracking-widest mb-4">Shopping List</h3>
                   <div className="space-y-4">
                     {item.shoppingList.map((shop, index) => {
                       const shopName = typeof shop === 'string' ? shop : shop.name;
-                      const products = typeof shop === 'string' ? [] : shop.items;
+                      const products = typeof shop === 'string' ? [] : (shop.items || []);
 
                       return (
                         <div key={index} className="bg-white rounded-[15px] border border-k-coffee/5 shadow-sm overflow-hidden">
@@ -306,13 +326,15 @@ export function GuideModal({ item, isOpen, onClose }: GuideModalProps) {
                                   className="flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors group"
                                 >
                                   {/* Product Image */}
-                                  <div className="w-[72px] h-[72px] rounded-lg bg-gray-100 overflow-hidden shrink-0 border border-gray-100">
-                                    <img 
-                                      src={product.image || `https://picsum.photos/seed/${product.name}/100/100`} 
-                                      alt={product.name}
-                                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                                    />
-                                  </div>
+                                  {product.image && (
+                                    <div className="w-[72px] h-[72px] rounded-lg bg-gray-100 overflow-hidden shrink-0 border border-gray-100">
+                                      <img 
+                                        src={product.image} 
+                                        alt={product.name}
+                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                      />
+                                    </div>
+                                  )}
                                   
                                   {/* Product Info */}
                                   <div className="flex-1 min-w-0">
@@ -338,13 +360,15 @@ export function GuideModal({ item, isOpen, onClose }: GuideModalProps) {
                   <h3 className="text-sm font-bold text-k-coffee/40 uppercase tracking-widest mb-4">Introduction</h3>
                   
                   {/* Image Carousel */}
-                  <div className="flex gap-3 overflow-x-auto pb-4 mb-4 scrollbar-hide snap-x">
-                    {displayImages.map((img, i) => (
-                      <div key={i} className="snap-center shrink-0 w-64 aspect-[4/3] rounded-[15px] overflow-hidden shadow-sm">
-                        <img src={img} alt="Spot" className="w-full h-full object-cover" />
-                      </div>
-                    ))}
-                  </div>
+                  {displayImages.length > 0 && (
+                    <div className="flex gap-3 overflow-x-auto pb-4 mb-4 scrollbar-hide snap-x">
+                      {displayImages.map((img, i) => (
+                        <div key={i} className="snap-center shrink-0 w-64 aspect-[4/3] rounded-[15px] overflow-hidden shadow-sm">
+                          <img src={img} alt="Spot" className="w-full h-full object-cover" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
                   {/* Manual Description */}
                   {item.description && (

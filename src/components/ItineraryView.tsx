@@ -161,11 +161,19 @@ export function ItineraryView() {
         {/* 6. Timeline List */}
         <div className="px-4 pb-24">
           {currentDay.items.map((item) => (
-            <ItineraryCard 
-              key={item.id} 
-              item={item} 
-              onClick={() => setSelectedItineraryItem(item)}
-            />
+            <React.Fragment key={item.id}>
+              {item.isSeparateSection && (
+                <div className="py-8 flex items-center justify-center">
+                  <div className="h-px bg-k-coffee/20 w-1/3"></div>
+                  <span className="mx-4 text-k-coffee/40 text-xs font-serif italic tracking-widest">{item.sectionTitle || 'Separate Section'}</span>
+                  <div className="h-px bg-k-coffee/20 w-1/3"></div>
+                </div>
+              )}
+              <ItineraryCard 
+                item={item} 
+                onClick={() => setSelectedItineraryItem(item)}
+              />
+            </React.Fragment>
           ))}
           
           <div className="text-center py-12 opacity-30">
