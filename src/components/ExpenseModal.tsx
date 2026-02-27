@@ -1,3 +1,18 @@
+import { db } from '../firebase'; // 根據您的目錄結構調整路徑
+import { collection, getDocs, addDoc, query, orderBy } from "firebase/firestore";
+
+const fetchExpenses = async () => {
+  try {
+    // ✅ 新增：從 Firestore 讀取資料
+    const q = query(collection(db, "expenses"), orderBy("date", "desc"));
+    const querySnapshot = await getDocs(q);
+    const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    setExpenses(data as Expense[]); // 假設您有定義 Expense 型別
+  } catch (error) {
+    console.error('Failed to fetch expenses:', error);
+  }
+};
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { X, Wallet, Plus, CreditCard, Banknote, Smartphone, Calendar, Trash2 } from 'lucide-react';
@@ -125,10 +140,10 @@ export const ExpenseModal: React.FC<ExpenseModalProps> = ({ isOpen, onClose }) =
 
   const fetchExpenses = async () => {
     try {
-      const res = await fetch('/api/expenses');
+  
       if (res.ok) {
-        const data = await res.json();
-        setExpenses(data);
+        
+      
       }
     } catch (error) {
       console.error('Failed to fetch expenses:', error);
