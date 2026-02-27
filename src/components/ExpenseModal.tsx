@@ -1,4 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { db } from '../lib/firebase';
+import { collection, getDocs } from "firebase/firestore";
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { X, Wallet, Plus, CreditCard, Banknote, Smartphone, Calendar, Trash2 } from 'lucide-react';
 
@@ -125,10 +127,20 @@ export const ExpenseModal: React.FC<ExpenseModalProps> = ({ isOpen, onClose }) =
 
   const fetchExpenses = async () => {
     try {
-      const res = await fetch('/api/expenses');
-      if (res.ok) {
-        const data = await res.json();
-        setExpenses(data);
+      // 1. 引用資料庫中的 "expenses" 集合
+const expensesCollection = collection(db, "expenses");
+
+// 2. 獲取資料
+const querySnapshot = await getDocs(expensesCollection);
+
+// 3. 整理資料格式
+const data = querySnapshot.docs.map(doc => ({
+  id: doc.id,
+  ...doc.data()
+})) as Expense[];
+
+// 4. 更新狀態
+setExpenses(data);
       }
     } catch (error) {
       console.error('Failed to fetch expenses:', error);
