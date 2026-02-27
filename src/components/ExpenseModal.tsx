@@ -1,21 +1,9 @@
-import { db } from '../firebase'; // 根據您的目錄結構調整路徑
-import { collection, getDocs, addDoc, query, orderBy } from "firebase/firestore";
-
-const fetchExpenses = async () => {
-  try {
-    // ✅ 新增：從 Firestore 讀取資料
-    const q = query(collection(db, "expenses"), orderBy("date", "desc"));
-    const querySnapshot = await getDocs(q);
-    const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    setExpenses(data as Expense[]); // 假設您有定義 Expense 型別
-  } catch (error) {
-    console.error('Failed to fetch expenses:', error);
-  }
-};
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { X, Wallet, Plus, CreditCard, Banknote, Smartphone, Calendar, Trash2 } from 'lucide-react';
+// ✅ 匯入 Firebase Firestore 功能
+import { db } from '../firebase'; // ⚠️ 請確認您的 firebase.ts 路徑是否正確
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, Timestamp } from "firebase/firestore";
 
 interface ExpenseModalProps {
   isOpen: boolean;
@@ -42,8 +30,6 @@ interface ExpenseItemProps {
 
 const ExpenseItem: React.FC<ExpenseItemProps> = ({ expense, onDelete, onEdit }) => {
   const x = useMotionValue(0);
-  const opacity = useTransform(x, [-100, -50], [1, 0]);
-  const deleteButtonOpacity = useTransform(x, [-100, -50], [1, 0]);
   const [isDragging, setIsDragging] = useState(false);
 
   const amountTWD = expense.currency === 'TWD' ? expense.amount : Math.round(expense.amount * EXCHANGE_RATE);
@@ -132,23 +118,26 @@ const ExpenseItem: React.FC<ExpenseItemProps> = ({ expense, onDelete, onEdit }) 
 export const ExpenseModal: React.FC<ExpenseModalProps> = ({ isOpen, onClose }) => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
 
+  // ✅ 修正後的資料讀取函數
+  const fetchExpenses = async () => {
+    try {
+      const q = query(collection(db, "expenses"), orderBy("date", "desc"));
+      const querySnapshot = await getDocs(q);
+      const data = querySnapshot.docs.map(doc => ({ 
+        id: doc.id, 
+        ...doc.data() 
+      })) as Expense[];
+      setExpenses(data);
+    } catch (error) {
+      console.error('Failed to fetch expenses:', error);
+    }
+  };
+
   useEffect(() => {
     if (isOpen) {
       fetchExpenses();
     }
   }, [isOpen]);
-
-  const fetchExpenses = async () => {
-    try {
-  
-      if (res.ok) {
-        
-      
-      }
-    } catch (error) {
-      console.error('Failed to fetch expenses:', error);
-    }
-  };
 
   const [selectedDay, setSelectedDay] = useState<string>('All');
   const [isAdding, setIsAdding] = useState(false);
@@ -180,11 +169,11 @@ export const ExpenseModal: React.FC<ExpenseModalProps> = ({ isOpen, onClose }) =
     }, 0);
   }, [filteredExpenses]);
 
+  // ✅ 修正後的資料儲存函數
   const handleSaveExpense = async () => {
     if (!newTitle || !newAmount) return;
     
-    const expenseData: Expense = {
-      id: editingId || Date.now().toString(),
+    const expenseData = {
       title: newTitle,
       date: newDate,
       paymentMethod: newMethod,
@@ -195,39 +184,25 @@ export const ExpenseModal: React.FC<ExpenseModalProps> = ({ isOpen, onClose }) =
 
     try {
       if (editingId) {
-        const res = await fetch(`/api/expenses/${editingId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(expenseData),
-        });
-        if (res.ok) {
-          setExpenses(prev => prev.map(e => e.id === editingId ? expenseData : e));
-        }
+        // 更新資料
+        const expenseRef = doc(db, "expenses", editingId);
+        await updateDoc(expenseRef, expenseData);
       } else {
-        const res = await fetch('/api/expenses', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(expenseData),
-        });
-        if (res.ok) {
-          setExpenses(prev => [expenseData, ...prev]);
-        }
+        // 新增資料
+        await addDoc(collection(db, "expenses"), expenseData);
       }
       resetForm();
-      fetchExpenses(); // Refresh list to ensure sync
+      fetchExpenses(); // 重新讀取以同步
     } catch (error) {
       console.error('Failed to save expense:', error);
     }
   };
 
+  // ✅ 修正後的資料刪除函數
   const handleDeleteExpense = async (id: string) => {
     try {
-      const res = await fetch(`/api/expenses/${id}`, {
-        method: 'DELETE',
-      });
-      if (res.ok) {
-        setExpenses(prev => prev.filter(e => e.id !== id));
-      }
+      await deleteDoc(doc(db, "expenses", id));
+      setExpenses(prev => prev.filter(e => e.id !== id));
     } catch (error) {
       console.error('Failed to delete expense:', error);
     }
