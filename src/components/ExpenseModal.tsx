@@ -127,25 +127,25 @@ export const ExpenseModal: React.FC<ExpenseModalProps> = ({ isOpen, onClose }) =
 
   const fetchExpenses = async () => {
     try {
-      // 1. 引用資料庫中的 "expenses" 集合
-const expensesCollection = collection(db, "expenses");
-
-// 2. 獲取資料
-const querySnapshot = await getDocs(expensesCollection);
-
-// 3. 整理資料格式
-const data = querySnapshot.docs.map(doc => ({
-  id: doc.id,
-  ...doc.data()
-})) as Expense[];
-
-// 4. 更新狀態
-setExpenses(data);
-      }
-    } catch (error) {
-      console.error('Failed to fetch expenses:', error);
-    }
-  };
+    // 引用資料庫中的 "expenses" 集合
+    const expensesCollection = collection(db, "expenses");
+    
+    // 獲取資料
+    const querySnapshot = await getDocs(expensesCollection);
+    
+    // 整理資料格式
+    const data = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as Expense[];
+    
+    // 更新狀態
+    setExpenses(data);
+    
+  } catch (error) { // 這是對應第 145 行的 catch
+    console.error('Failed to fetch expenses from Firebase:', error);
+  } // 這是對應 try 的結束括號
+}; // 這是對應整個函數的結束括號
 
   const [selectedDay, setSelectedDay] = useState<string>('All');
   const [isAdding, setIsAdding] = useState(false);
