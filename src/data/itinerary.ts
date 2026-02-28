@@ -197,7 +197,7 @@ export const itineraryData: DaySchedule[] = [
         naverMapLink: "https://naver.me/5pwzFlUw",
         highlight: ["必吃美食"],
         menuRecommendations: [
-          { nameCN: "豬肉湯飯", nameKR: "돼지곰탕 대표", price: "11,000 KRW" },
+          { nameCN: "豬肉湯飯", nameKR: "돼지곰탕", price: "11,000 KRW" },
           { nameCN: "白菜餃子(4個)", nameKR: "배추만두 4pc", price: "8,000 KRW" },
           { nameCN: "冷切肉", nameKR: "냉제육", price: "10,000 KRW" }
         ]
@@ -777,6 +777,29 @@ export const itineraryData: DaySchedule[] = [
         ]
       },
       {
+        id: "d5-8",
+        time: "14:00",
+        title: "住宿：Dream House (드림하우스)",
+        type: "accommodation",
+        description: "Check in: 14:00",
+        location: "Dream House",
+        koreanAddress: "서울 마포구 잔다리로 78",
+        naverMapLink: "https://naver.me/5UEKKlyq",
+        images: [
+          "https://pix8.agoda.net/property/37407728/1255392406/c44c6a95bfb0df2d22a528dd509a7c15.jpeg?ce=2&s=1024x"
+        ],
+        bookingInfo: {
+          bookingId: "1689219615",
+          roomType: "Double Room",
+          checkIn: "2026-03-28 14:00",
+          checkOut: "2026-03-29 11:00",
+          guests: 1,
+          price: "KRW 112,183",
+          policy: "免費取消期限：2026/03/21",
+          address: "78, Jandari-ro, Mapo-gu, Seoul"
+        }
+      },
+      {
         id: "d5-4",
         time: "14:30",
         title: "點心：勳勳糖餅 (훈훈호떡)",
@@ -831,29 +854,7 @@ export const itineraryData: DaySchedule[] = [
           "Revoir Custom Brush 刷具店"
         ]
       },
-      {
-        id: "d5-8",
-        time: "21:00",
-        title: "住宿：Dream House (드림하우스)",
-        type: "accommodation",
-        description: "Check in: 14:00",
-        location: "Dream House",
-        koreanAddress: "서울 마포구 잔다리로 78",
-        naverMapLink: "https://naver.me/5UEKKlyq",
-        images: [
-          "https://pix8.agoda.net/property/37407728/1255392406/c44c6a95bfb0df2d22a528dd509a7c15.jpeg?ce=2&s=1024x"
-        ],
-        bookingInfo: {
-          bookingId: "1689219615",
-          roomType: "Double Room",
-          checkIn: "2026-03-28 14:00",
-          checkOut: "2026-03-29 11:00",
-          guests: 1,
-          price: "KRW 112,183",
-          policy: "免費取消期限：2026/03/21",
-          address: "78, Jandari-ro, Mapo-gu, Seoul"
-        }
-      },
+
       {
         id: "d5-5",
         time: "16:00",

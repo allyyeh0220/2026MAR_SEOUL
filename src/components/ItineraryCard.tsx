@@ -47,7 +47,7 @@ export const ItineraryCard: React.FC<ItineraryCardProps> = ({ item, onClick }) =
     >
       {/* Time Column */}
       <div className="w-20 text-right shrink-0 pt-0 relative pr-4">
-        <span className="text-xl text-k-coffee font-cream tracking-widest">{item.time}</span>
+        <span className="text-base text-k-coffee font-cream tracking-widest">{item.time}</span>
         <span className="absolute right-1 top-1.5 text-[8px] text-k-coffee/60 border border-k-coffee/60 rounded-full w-1.5 h-1.5 inline-block"></span>
       </div>
 
@@ -64,7 +64,7 @@ export const ItineraryCard: React.FC<ItineraryCardProps> = ({ item, onClick }) =
 
           <div className="space-y-1.5 flex-1">
             {/* Title */}
-            <h3 className="text-xl font-bold text-k-coffee leading-tight font-sans tracking-wide">{item.title}</h3>
+            <h3 className="text-base font-bold text-k-coffee leading-tight font-sans tracking-wide">{item.title}</h3>
             
             {/* Category */}
             <div className="flex items-center gap-2 text-[#A89F91]">

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { itineraryData, ItineraryItem } from '../data/itinerary';
 import { ItineraryCard } from './ItineraryCard';
 import { WeatherWidget } from './WeatherWidget';
@@ -9,7 +10,16 @@ import { GuideModal } from './GuideModal';
 import { ChevronLeft, ChevronRight, Info, Wallet, BedDouble, MapPin, Clock } from 'lucide-react';
 
 export function ItineraryView() {
-  const [currentDayIndex, setCurrentDayIndex] = useState(0);
+  const [currentDayIndex, setCurrentDayIndex] = useState(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const todayStr = `${year}-${month}-${day}`;
+    
+    const index = itineraryData.findIndex(day => day.date === todayStr);
+    return index !== -1 ? index : 0;
+  });
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [isHotelModalOpen, setIsHotelModalOpen] = useState(false);
@@ -19,18 +29,49 @@ export function ItineraryView() {
   
   // Find accommodation for the day if it exists
   const accommodation = currentDay.items.find(item => item.type === 'accommodation');
+  const checkInTime = accommodation?.bookingInfo?.checkIn?.split(' ')[1] || '15:00';
 
   // Carousel State
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [direction, setDirection] = useState(0);
   
   const heroImages = currentDay.heroImages || [{ url: `https://picsum.photos/seed/${currentDay.date}/800/450`, caption: '首爾' }];
 
-  const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % heroImages.length);
+  useEffect(() => {
+    setCurrentImageIndex(0);
+    setDirection(0);
+  }, [currentDayIndex]);
+
+  const paginate = (newDirection: number) => {
+    setDirection(newDirection);
+    setCurrentImageIndex((prev) => {
+      if (newDirection === 1) {
+        return (prev + 1) % heroImages.length;
+      }
+      return (prev - 1 + heroImages.length) % heroImages.length;
+    });
   };
 
-  const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + heroImages.length) % heroImages.length);
+  const variants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 1000 : -1000,
+      opacity: 0
+    }),
+    center: {
+      zIndex: 1,
+      x: 0,
+      opacity: 1
+    },
+    exit: (direction: number) => ({
+      zIndex: 0,
+      x: direction < 0 ? 1000 : -1000,
+      opacity: 0
+    })
+  };
+
+  const swipeConfidenceThreshold = 10000;
+  const swipePower = (offset: number, velocity: number) => {
+    return Math.abs(offset) * velocity;
   };
 
   return (
@@ -93,27 +134,51 @@ export function ItineraryView() {
 
         {/* 4. Hero Image Slider */}
         <div className="px-4 mb-6 relative">
-          <div className="relative aspect-[16/9] shadow-lg rounded-[15px] overflow-hidden group">
-            <img 
-              src={heroImages[currentImageIndex].url} 
-              alt={heroImages[currentImageIndex].caption} 
-              className="w-full h-full object-cover transition-opacity duration-500"
-              referrerPolicy="no-referrer"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+          <div className="relative aspect-[16/9] shadow-lg rounded-[15px] overflow-hidden group bg-gray-200">
+            <AnimatePresence initial={false} custom={direction}>
+              <motion.img
+                key={currentImageIndex}
+                src={heroImages[currentImageIndex].url}
+                alt={heroImages[currentImageIndex].caption}
+                custom={direction}
+                variants={variants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{
+                  x: { type: "spring", stiffness: 300, damping: 30 },
+                  opacity: { duration: 0.2 }
+                }}
+                drag={heroImages.length > 1 ? "x" : false}
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={1}
+                onDragEnd={(e, { offset, velocity }) => {
+                  const swipe = swipePower(offset.x, velocity.x);
+
+                  if (swipe < -swipeConfidenceThreshold) {
+                    paginate(1);
+                  } else if (swipe > swipeConfidenceThreshold) {
+                    paginate(-1);
+                  }
+                }}
+                className="absolute w-full h-full object-cover"
+                referrerPolicy="no-referrer"
+              />
+            </AnimatePresence>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
             
             {/* Navigation Arrows */}
             {heroImages.length > 1 && (
               <>
                 <button 
-                  onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-white/80 hover:text-white bg-black/20 hover:bg-black/40 p-1 rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100"
+                  onClick={(e) => { e.stopPropagation(); paginate(-1); }}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-white/80 hover:text-white bg-black/20 hover:bg-black/40 p-1 rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-10"
                 >
                   <ChevronLeft className="w-6 h-6" />
                 </button>
                 <button 
-                  onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/80 hover:text-white bg-black/20 hover:bg-black/40 p-1 rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100"
+                  onClick={(e) => { e.stopPropagation(); paginate(1); }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/80 hover:text-white bg-black/20 hover:bg-black/40 p-1 rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-10"
                 >
                   <ChevronRight className="w-6 h-6" />
                 </button>
@@ -150,7 +215,7 @@ export function ItineraryView() {
                 <p className="text-lg font-bold text-k-coffee font-serif tracking-wide mb-1">{accommodation.title.replace('住宿：', '')}</p>
                 <div className="flex items-center gap-1.5 text-k-coffee/50">
                   <Clock className="w-3 h-3" />
-                  <span className="text-xs font-bold font-mono">Check-in: 15:00</span>
+                  <span className="text-xs font-bold font-mono">Check-in: {checkInTime}</span>
                 </div>
               </div>
               <BedDouble className="w-6 h-6 text-k-coffee/30" />

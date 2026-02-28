@@ -49,7 +49,7 @@ const DishModal = ({ dish, isOpen, onClose }: DishModalProps) => {
               )}
               
               <div className="text-center space-y-2">
-                <h3 className="text-2xl font-bold text-gray-900">{dish.nameKR}</h3>
+                <h3 className="text-3xl font-bold text-gray-900">{dish.nameKR}</h3>
                 <p className="text-lg text-gray-500 font-medium">{dish.nameCN}</p>
                 {dish.price && (
                   <p className="text-xl font-bold text-k-coffee mt-2">{dish.price}</p>
