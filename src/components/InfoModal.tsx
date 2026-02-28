@@ -45,7 +45,7 @@ export const InfoModal: React.FC<InfoModalProps> = ({ isOpen, onClose }) => {
                     <div>
                       <p className="text-xs text-k-coffee/50 font-bold mb-1">去程 DEPARTURE</p>
                       <p className="font-bold text-k-coffee">BR170</p>
-                      <p className="text-sm text-k-coffee/70">07:05 TPE - 10:35 ICN</p>
+                      <p className="text-sm text-k-coffee/70">07:05 TPE - 10:30 ICN</p>
                     </div>
                     <div className="text-right">
                       <span className="text-xs font-bold bg-k-blue/20 text-k-coffee px-2 py-1 rounded-full">3/24</span>

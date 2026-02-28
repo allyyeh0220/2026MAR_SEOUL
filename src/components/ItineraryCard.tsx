@@ -74,7 +74,7 @@ export const ItineraryCard: React.FC<ItineraryCardProps> = ({ item, onClick }) =
 
             {/* Description */}
             {item.description && (
-              <p className="text-sm text-k-coffee/60 leading-relaxed font-medium font-sans mt-1">
+              <p className="text-sm text-k-coffee/60 leading-relaxed font-medium font-sans mt-1 whitespace-pre-wrap">
                 {item.description}
               </p>
             )}

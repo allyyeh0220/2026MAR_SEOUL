@@ -1,15 +1,41 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { itineraryData, ItineraryItem } from '../data/itinerary';
-import { ItineraryCard } from './ItineraryCard';
+import { 
+  DndContext, 
+  closestCenter, 
+  KeyboardSensor, 
+  MouseSensor,
+  TouchSensor,
+  useSensor, 
+  useSensors,
+  DragEndEvent,
+  DragStartEvent,
+  pointerWithin,
+  CollisionDetection
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+
+import { itineraryData as initialItineraryData, ItineraryItem } from '../data/itinerary';
+import { SortableItineraryItem } from './SortableItineraryItem';
+import { ItineraryEditorModal } from './ItineraryEditorModal';
 import { WeatherWidget } from './WeatherWidget';
 import { InfoModal } from './InfoModal';
 import { ExpenseModal } from './ExpenseModal';
 import { HotelModal } from './HotelModal';
 import { GuideModal } from './GuideModal';
-import { ChevronLeft, ChevronRight, Info, Wallet, BedDouble, MapPin, Clock } from 'lucide-react';
+import { TrashBin } from './TrashBin';
+import { ChevronLeft, ChevronRight, Info, Wallet, BedDouble, MapPin, Clock, Plus } from 'lucide-react';
 
 export function ItineraryView() {
+  // State for Itinerary Data
+  const [itinerary, setItinerary] = useState(initialItineraryData);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
   const [currentDayIndex, setCurrentDayIndex] = useState(() => {
     const now = new Date();
     const year = now.getFullYear();
@@ -17,15 +43,56 @@ export function ItineraryView() {
     const day = String(now.getDate()).padStart(2, '0');
     const todayStr = `${year}-${month}-${day}`;
     
-    const index = itineraryData.findIndex(day => day.date === todayStr);
+    const index = initialItineraryData.findIndex(day => day.date === todayStr);
     return index !== -1 ? index : 0;
   });
+
+  // Scroll to top when day changes
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = 0;
+    }
+  }, [currentDayIndex]);
+
+  // Fetch data from API on mount
+  useEffect(() => {
+    fetch('/api/itinerary')
+      .then(res => res.json())
+      .then(items => {
+        setItinerary(prev => {
+          return prev.map(day => {
+            // Filter items for this day
+            const dayItems = items.filter((i: any) => i.day === day.day);
+            // Sort by sortOrder
+            dayItems.sort((a: any, b: any) => a.sortOrder - b.sortOrder);
+            
+            // If we have items from DB, use them. Otherwise keep initial (though DB should be seeded)
+            // Actually, since we seeded the DB, we should always use DB items if available.
+            // If DB returns empty for a day (e.g. user deleted all), it should be empty.
+            // But on first load if DB was just seeded, it matches initial.
+            return {
+              ...day,
+              items: dayItems
+            };
+          });
+        });
+      })
+      .catch(err => console.error("Failed to load itinerary from API", err));
+  }, []);
+
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [isHotelModalOpen, setIsHotelModalOpen] = useState(false);
   const [selectedItineraryItem, setSelectedItineraryItem] = useState<ItineraryItem | null>(null);
   
-  const currentDay = itineraryData[currentDayIndex];
+  // Editor State
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<ItineraryItem | null>(null);
+  
+  // Dragging State
+  const [isDragging, setIsDragging] = useState(false);
+
+  const currentDay = itinerary[currentDayIndex];
   
   // Find accommodation for the day if it exists
   const accommodation = currentDay.items.find(item => item.type === 'accommodation');
@@ -41,6 +108,140 @@ export function ItineraryView() {
     setCurrentImageIndex(0);
     setDirection(0);
   }, [currentDayIndex]);
+
+  // DnD Sensors
+  const sensors = useSensors(
+    useSensor(MouseSensor, {
+      activationConstraint: {
+        distance: 10,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 200, // Long press 0.2s
+        tolerance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setIsDragging(true);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    setIsDragging(false);
+    
+    if (!over) return;
+
+    // Handle Deletion
+    if (over.id === 'trash-bin') {
+      setItinerary((prev) => {
+        const newItinerary = [...prev];
+        const day = { ...newItinerary[currentDayIndex] };
+        day.items = day.items.filter((item) => item.id !== active.id);
+        newItinerary[currentDayIndex] = day;
+        return newItinerary;
+      });
+
+      // API Call
+      fetch(`/api/itinerary/${active.id}`, { method: 'DELETE' })
+        .catch(err => console.error("Failed to delete item", err));
+      return;
+    }
+    
+    if (active.id !== over.id) {
+      setItinerary((prev) => {
+        const newItinerary = [...prev];
+        const day = { ...newItinerary[currentDayIndex] };
+        const items = [...day.items];
+        
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+        
+        const newItems = arrayMove(items, oldIndex, newIndex);
+        day.items = newItems;
+        newItinerary[currentDayIndex] = day;
+        
+        // API Call for reorder
+        const itemIds = newItems.map(i => i.id);
+        fetch('/api/itinerary/reorder', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ day: day.day, itemIds })
+        }).catch(err => console.error("Failed to reorder", err));
+
+        return newItinerary;
+      });
+    }
+  };
+
+  const customCollisionDetection: CollisionDetection = useCallback((args) => {
+    // First, check if we are over the trash bin (using pointerWithin)
+    const pointerCollisions = pointerWithin(args);
+    const trashBin = pointerCollisions.find((c) => c.id === 'trash-bin');
+    
+    if (trashBin) {
+      return [trashBin];
+    }
+
+    // Otherwise, fallback to closestCenter for the sortable list
+    return closestCenter(args);
+  }, []);
+
+  const handleAddItem = () => {
+    setEditingItem(null);
+    setIsEditorOpen(true);
+  };
+
+  const handleEditItem = (item: ItineraryItem) => {
+    setEditingItem(item);
+    setIsEditorOpen(true);
+    // Close the guide modal if it's open (it should be, as we edit from there)
+    setSelectedItineraryItem(null); 
+  };
+
+  const handleSaveItem = (item: ItineraryItem) => {
+    const existingItemIndex = currentDay.items.findIndex(i => i.id === item.id);
+    const isNew = existingItemIndex === -1;
+
+    setItinerary((prev) => {
+      const newItinerary = [...prev];
+      const day = { ...newItinerary[currentDayIndex] };
+      const items = [...day.items];
+      
+      if (!isNew) {
+        // Edit existing
+        const index = items.findIndex((i) => i.id === item.id);
+        items[index] = item;
+      } else {
+        // Add new
+        items.push(item);
+      }
+      
+      day.items = items;
+      newItinerary[currentDayIndex] = day;
+      return newItinerary;
+    });
+
+    // API Call
+    if (isNew) {
+        fetch('/api/itinerary', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ day: currentDay.day, item })
+        }).catch(err => console.error("Failed to create item", err));
+    } else {
+        fetch(`/api/itinerary/${item.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ item })
+        }).catch(err => console.error("Failed to update item", err));
+    }
+  };
 
   const paginate = (newDirection: number) => {
     setDirection(newDirection);
@@ -95,7 +296,7 @@ export function ItineraryView() {
       {/* 2. Day Selector */}
       <div className="bg-k-cream pt-4 pb-2 px-4 shrink-0">
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-          {itineraryData.map((day, index) => {
+          {itinerary.map((day, index) => {
             const dayDate = day.date.split('-')[2];
             const weekdays = ["TUE", "WED", "THR", "FRI", "SAT", "SUN"];
             const weekday = weekdays[index]; 
@@ -121,7 +322,7 @@ export function ItineraryView() {
       </div>
 
       {/* Scrollable Content Area */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto scrollbar-hide relative">
         
         {/* 3. Day Title & Weather */}
         <div className="px-6 py-4 flex items-center justify-between">
@@ -223,23 +424,49 @@ export function ItineraryView() {
           </div>
         )}
 
-        {/* 6. Timeline List */}
+        {/* 6. Timeline List (Sortable) */}
         <div className="px-4 pb-24">
-          {currentDay.items.map((item) => (
-            <React.Fragment key={item.id}>
-              {item.isSeparateSection && (
-                <div className="py-8 flex items-center justify-center">
-                  <div className="h-px bg-k-coffee/20 w-1/3"></div>
-                  <span className="mx-4 text-k-coffee/40 text-xs font-serif italic tracking-widest">{item.sectionTitle || 'Separate Section'}</span>
-                  <div className="h-px bg-k-coffee/20 w-1/3"></div>
-                </div>
+          <DndContext 
+            sensors={sensors}
+            collisionDetection={customCollisionDetection}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext 
+              items={currentDay.items.map(item => item.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {currentDay.items.map((item) => (
+                <React.Fragment key={item.id}>
+                  {item.isSeparateSection && (
+                    <div className="py-8 flex items-center justify-center">
+                      <div className="h-px bg-k-coffee/20 w-1/3"></div>
+                      <span className="mx-4 text-k-coffee/40 text-xs font-serif italic tracking-widest">{item.sectionTitle || 'Separate Section'}</span>
+                      <div className="h-px bg-k-coffee/20 w-1/3"></div>
+                    </div>
+                  )}
+                  <SortableItineraryItem 
+                    item={item} 
+                    onClick={() => setSelectedItineraryItem(item)}
+                  />
+                </React.Fragment>
+              ))}
+            </SortableContext>
+
+            {/* Trash Bin - Only visible when dragging */}
+            <AnimatePresence>
+              {isDragging && (
+                <motion.div
+                  initial={{ opacity: 0, y: 50, scale: 0.5 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 50, scale: 0.5 }}
+                  className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
+                >
+                  <TrashBin />
+                </motion.div>
               )}
-              <ItineraryCard 
-                item={item} 
-                onClick={() => setSelectedItineraryItem(item)}
-              />
-            </React.Fragment>
-          ))}
+            </AnimatePresence>
+          </DndContext>
           
           <div className="text-center py-12 opacity-30">
             <p className="text-xs text-k-coffee font-serif italic tracking-widest">End of Day {currentDay.day}</p>
@@ -247,17 +474,41 @@ export function ItineraryView() {
         </div>
       </div>
 
+      {/* Floating Add Button - Hidden when dragging */}
+      <AnimatePresence>
+        {!isDragging && (
+          <motion.button
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            onClick={handleAddItem}
+            className="absolute bottom-6 right-6 w-14 h-14 bg-k-coffee text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-k-coffee/90 transition-transform active:scale-95 z-40"
+          >
+            <Plus className="w-8 h-8" />
+          </motion.button>
+        )}
+      </AnimatePresence>
+
       {/* Modals */}
       <InfoModal isOpen={isInfoModalOpen} onClose={() => setIsInfoModalOpen(false)} />
       <ExpenseModal isOpen={isExpenseModalOpen} onClose={() => setIsExpenseModalOpen(false)} />
       <HotelModal isOpen={isHotelModalOpen} onClose={() => setIsHotelModalOpen(false)} hotel={accommodation} />
+      
       {selectedItineraryItem && (
         <GuideModal 
           item={selectedItineraryItem} 
           isOpen={!!selectedItineraryItem} 
-          onClose={() => setSelectedItineraryItem(null)} 
+          onClose={() => setSelectedItineraryItem(null)}
+          onEdit={() => handleEditItem(selectedItineraryItem)}
         />
       )}
+
+      <ItineraryEditorModal
+        isOpen={isEditorOpen}
+        onClose={() => setIsEditorOpen(false)}
+        onSave={handleSaveItem}
+        initialItem={editingItem}
+      />
     </div>
   );
 }

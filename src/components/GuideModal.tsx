@@ -7,6 +7,7 @@ interface GuideModalProps {
   item: ItineraryItem;
   isOpen: boolean;
   onClose: () => void;
+  onEdit?: () => void;
 }
 
 interface DishModalProps {
@@ -64,7 +65,7 @@ const DishModal = ({ dish, isOpen, onClose }: DishModalProps) => {
   );
 };
 
-export function GuideModal({ item, isOpen, onClose }: GuideModalProps) {
+export function GuideModal({ item, isOpen, onClose, onEdit }: GuideModalProps) {
   const [selectedDish, setSelectedDish] = useState<{ nameCN: string; nameKR: string; imageUrl?: string; price?: string; isRecommended?: boolean } | null>(null);
 
   const getCategoryInfo = (type: string) => {
@@ -107,12 +108,22 @@ export function GuideModal({ item, isOpen, onClose }: GuideModalProps) {
           >
             <div className="p-6 pb-12">
               {/* Close Button */}
-              <button 
-                onClick={onClose} 
-                className="absolute top-6 right-6 p-2 bg-k-coffee/5 rounded-full hover:bg-k-coffee/10 transition-colors z-10"
-              >
-                <X className="w-5 h-5 text-k-coffee" />
-              </button>
+              <div className="absolute top-6 right-6 flex gap-2 z-10">
+                {onEdit && (
+                  <button 
+                    onClick={onEdit}
+                    className="p-2 bg-k-coffee/5 rounded-full hover:bg-k-coffee/10 transition-colors text-k-coffee font-bold text-xs flex items-center gap-1"
+                  >
+                    EDIT
+                  </button>
+                )}
+                <button 
+                  onClick={onClose} 
+                  className="p-2 bg-k-coffee/5 rounded-full hover:bg-k-coffee/10 transition-colors"
+                >
+                  <X className="w-5 h-5 text-k-coffee" />
+                </button>
+              </div>
 
               {/* 1. Header Info */}
               <div className="mb-8 mt-2">
@@ -372,7 +383,7 @@ export function GuideModal({ item, isOpen, onClose }: GuideModalProps) {
 
                   {/* Manual Description */}
                   {item.description && (
-                  <p className="text-k-coffee/80 leading-relaxed mb-6 font-medium">
+                  <p className="text-k-coffee/80 leading-relaxed mb-6 font-medium whitespace-pre-wrap">
                     {item.description}
                   </p>
                 )}
