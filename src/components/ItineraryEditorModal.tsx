@@ -33,7 +33,10 @@ export const ItineraryEditorModal: React.FC<ItineraryEditorModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       if (initialItem) {
-        setFormData({ ...initialItem });
+        setFormData({ 
+          ...initialItem,
+          images: initialItem.images || (initialItem.image ? [initialItem.image] : [])
+        });
       } else {
         setFormData({
           time: '09:00',

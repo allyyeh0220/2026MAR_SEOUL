@@ -70,6 +70,12 @@ export const ItineraryCard: React.FC<ItineraryCardProps> = ({ item, onClick }) =
             <div className="flex items-center gap-2 text-[#A89F91]">
               <DisplayIcon className="w-3.5 h-3.5" />
               <span className="text-[10px] font-bold tracking-[0.2em] uppercase font-sans">{displayLabel}</span>
+              {(item.images?.length || 0) > 0 && (
+                <div className="flex items-center gap-1 ml-2 text-k-coffee/60">
+                  <Camera className="w-3 h-3" />
+                  <span className="text-[9px] font-bold">{item.images?.length}</span>
+                </div>
+              )}
             </div>
 
             {/* Description */}
