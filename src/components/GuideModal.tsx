@@ -106,7 +106,7 @@ export function GuideModal({ item, isOpen, onClose, onEdit }: GuideModalProps) {
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
             className="absolute bottom-0 left-0 right-0 bg-[#FDFBF7] z-50 shadow-2xl max-h-[90vh] overflow-y-auto scrollbar-hide rounded-t-[15px]"
           >
-            <div className="p-6 pb-12">
+            <div className="p-6 pb-[max(3rem,env(safe-area-inset-bottom))]">
               {/* Close Button */}
               <div className="absolute top-6 right-6 flex gap-2 z-10">
                 {onEdit && (

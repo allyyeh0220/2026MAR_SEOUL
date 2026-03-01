@@ -24,7 +24,7 @@ export const InfoModal: React.FC<InfoModalProps> = ({ isOpen, onClose }) => {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="absolute inset-0 bg-[#FDFBF7] z-50 p-6 overflow-y-auto"
+            className="absolute inset-0 bg-[#FDFBF7] z-50 p-6 pt-[max(1.5rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))] overflow-y-auto"
           >
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-bold text-k-coffee font-serif tracking-wide">TRIP INFO</h3>

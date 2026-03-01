@@ -33,7 +33,7 @@ export const HotelModal: React.FC<HotelModalProps> = ({ isOpen, onClose, hotel }
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="absolute inset-0 bg-[#FDFBF7] z-50 p-0 flex flex-col overflow-hidden"
+            className="absolute inset-0 bg-[#FDFBF7] z-50 p-0 flex flex-col overflow-hidden pt-[max(0rem,env(safe-area-inset-top))]"
           >
             {/* Hero Image */}
             <div className="relative h-64 shrink-0">
@@ -165,7 +165,7 @@ export const HotelModal: React.FC<HotelModalProps> = ({ isOpen, onClose, hotel }
             </div>
 
             {/* Footer Action */}
-            <div className="p-6 border-t border-k-coffee/5 bg-white shrink-0">
+            <div className="p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] border-t border-k-coffee/5 bg-white shrink-0">
               {hotel.naverMapLink ? (
                 <a 
                   href={hotel.naverMapLink}

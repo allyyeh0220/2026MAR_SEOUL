@@ -328,7 +328,7 @@ export function ItineraryView() {
   return (
     <div className="h-full flex flex-col bg-k-cream font-sans relative">
       {/* 1. Header Bar */}
-      <header className="bg-k-coffee px-4 py-3 flex items-center justify-between shrink-0">
+      <header className="bg-k-coffee px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] flex items-center justify-between shrink-0">
         <div className="px-3 py-1 rounded-[15px] border border-k-header-text/30 text-k-header-text text-xs font-serif tracking-wider">
           2026 Mar.
         </div>

@@ -244,7 +244,7 @@ export const ExpenseModal: React.FC<ExpenseModalProps> = ({ isOpen, onClose }) =
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="absolute inset-0 bg-[#FDFBF7] z-50 p-6 flex flex-col"
+            className="absolute inset-0 bg-[#FDFBF7] z-50 p-6 pt-[max(1.5rem,env(safe-area-inset-top))] flex flex-col"
           >
             {/* Header */}
             <div className="flex justify-between items-center mb-6 shrink-0">
@@ -305,7 +305,7 @@ export const ExpenseModal: React.FC<ExpenseModalProps> = ({ isOpen, onClose }) =
                 </div>
 
                 {/* Add Button */}
-                <div className="absolute bottom-6 left-0 right-0 px-6 z-20">
+                <div className="absolute bottom-[max(1.5rem,env(safe-area-inset-bottom))] left-0 right-0 px-6 z-20">
                   <button 
                     onClick={() => {
                       resetForm();

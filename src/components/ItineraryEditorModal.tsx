@@ -127,7 +127,7 @@ export const ItineraryEditorModal: React.FC<ItineraryEditorModalProps> = ({
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="absolute bottom-0 left-0 right-0 bg-[#FDFBF7] z-50 p-6 rounded-t-[20px] max-h-[90vh] overflow-y-auto shadow-2xl"
+            className="absolute bottom-0 left-0 right-0 bg-[#FDFBF7] z-50 p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] rounded-t-[20px] max-h-[90vh] overflow-y-auto shadow-2xl"
           >
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-bold text-k-coffee font-serif tracking-wide">
