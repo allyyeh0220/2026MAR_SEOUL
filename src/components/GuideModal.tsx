@@ -366,7 +366,7 @@ export function GuideModal({ item, isOpen, onClose, onEdit }: GuideModalProps) {
               )}
 
               {/* 3. Introduction (Carousel + Description) */}
-              {!item.ticketInfo && !item.transferInfo && !item.airportGuide && (
+              {(displayImages.length > 0 || item.description) && (
                 <div>
                   <h3 className="text-sm font-bold text-k-coffee/40 uppercase tracking-widest mb-4">Introduction</h3>
                   
