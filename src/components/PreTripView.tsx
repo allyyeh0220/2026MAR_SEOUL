@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Check, X, Edit2 } from 'lucide-react';
-import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, setDoc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
 interface ListItem {
@@ -265,7 +265,9 @@ export function PreTripView() {
     setData(newData);
     
     try {
-      await setDoc(doc(db, 'pre_trip_data', 'lists'), newData);
+      await updateDoc(doc(db, 'pre_trip_data', 'lists'), {
+        [listType]: newItems
+      });
     } catch (error) {
       console.error("Error updating list:", error);
     }
@@ -299,6 +301,14 @@ export function PreTripView() {
     setNewPackingItemText('');
     setIsAddingPacking(false);
   };
+
+  if (loading) {
+    return (
+      <div className="h-full flex items-center justify-center bg-k-cream">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#A98467]"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full flex flex-col bg-k-cream font-sans overflow-y-auto scrollbar-hide pb-24">
