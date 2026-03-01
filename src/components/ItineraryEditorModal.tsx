@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Save, Camera, Trash2, Upload, Loader2 } from 'lucide-react';
 import { ItineraryItem } from '../data/itinerary';
-import { ref, uploadBytes, getDownloadURL, uploadString } from "firebase/storage";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { storage } from "../firebase";
 
 interface ItineraryEditorModalProps {
@@ -30,6 +30,7 @@ export const ItineraryEditorModal: React.FC<ItineraryEditorModalProps> = ({
   });
 
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -64,38 +65,78 @@ export const ItineraryEditorModal: React.FC<ItineraryEditorModalProps> = ({
     if (!files || files.length === 0) return;
 
     setIsUploading(true);
+    setUploadProgress(0);
     const newUrls: string[] = [];
+    let successCount = 0;
+    let failCount = 0;
 
     try {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        const storageRef = ref(storage, `images/${Date.now()}-${file.name}`);
         
-        // Convert to base64 string to avoid potential blob/file upload issues in some environments
-        const reader = new FileReader();
-        const filePromise = new Promise<string>((resolve, reject) => {
-          reader.onload = (e) => resolve(e.target?.result as string);
-          reader.onerror = (e) => reject(e);
-          reader.readAsDataURL(file);
-        });
+        // Basic validation
+        if (file.size > 5 * 1024 * 1024) { // 5MB limit
+          alert(`File ${file.name} is too large (max 5MB). Skipping.`);
+          continue;
+        }
+
+        if (!file.type.startsWith('image/')) {
+          alert(`File ${file.name} is not an image. Skipping.`);
+          continue;
+        }
+
+        const storageRef = ref(storage, `images/${Date.now()}-${Math.random().toString(36).substring(2, 9)}-${file.name}`);
         
-        const dataUrl = await filePromise;
-        const snapshot = await uploadString(storageRef, dataUrl, 'data_url');
-        const url = await getDownloadURL(snapshot.ref);
-        newUrls.push(url);
+        try {
+          // Use uploadBytesResumable for better reliability
+          const uploadTask = uploadBytesResumable(storageRef, file, {
+            contentType: file.type,
+          });
+
+          // Wait for upload to complete
+          await new Promise<void>((resolve, reject) => {
+            uploadTask.on('state_changed',
+              (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                setUploadProgress(Math.round(progress));
+              },
+              (error) => {
+                console.error("Upload error:", error);
+                reject(error);
+              },
+              () => {
+                resolve();
+              }
+            );
+          });
+
+          const url = await getDownloadURL(storageRef);
+          newUrls.push(url);
+          successCount++;
+        } catch (err) {
+          console.error(`Failed to upload ${file.name}:`, err);
+          failCount++;
+        }
       }
 
-      setFormData(prev => ({
-        ...prev,
-        images: [...(prev.images || []), ...newUrls]
-      }));
+      if (newUrls.length > 0) {
+        setFormData(prev => ({
+          ...prev,
+          images: [...(prev.images || []), ...newUrls]
+        }));
+      }
+
+      if (failCount > 0) {
+        alert(`Uploaded ${successCount} images. Failed to upload ${failCount} images. Please try again.`);
+      }
+
     } catch (error) {
-      console.error('Error uploading images:', error);
-      // Extract error message safely
+      console.error('Error in upload process:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      alert(`Failed to upload images: ${errorMessage}`);
+      alert(`Upload failed: ${errorMessage}`);
     } finally {
       setIsUploading(false);
+      setUploadProgress(0);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
