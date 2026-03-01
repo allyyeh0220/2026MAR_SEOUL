@@ -15,3 +15,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
+
+// Increase retry timeout to 5 minutes for slow connections
+storage.maxOperationRetryTime = 300000;
+storage.maxUploadRetryTime = 300000;

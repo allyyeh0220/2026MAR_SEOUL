@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Save, Camera, Trash2, Upload, Loader2 } from 'lucide-react';
 import { ItineraryItem } from '../data/itinerary';
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL, uploadString } from "firebase/storage";
 import { storage } from "../firebase";
 
 interface ItineraryEditorModalProps {
@@ -70,7 +70,17 @@ export const ItineraryEditorModal: React.FC<ItineraryEditorModalProps> = ({
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         const storageRef = ref(storage, `images/${Date.now()}-${file.name}`);
-        const snapshot = await uploadBytes(storageRef, file);
+        
+        // Convert to base64 string to avoid potential blob/file upload issues in some environments
+        const reader = new FileReader();
+        const filePromise = new Promise<string>((resolve, reject) => {
+          reader.onload = (e) => resolve(e.target?.result as string);
+          reader.onerror = (e) => reject(e);
+          reader.readAsDataURL(file);
+        });
+        
+        const dataUrl = await filePromise;
+        const snapshot = await uploadString(storageRef, dataUrl, 'data_url');
         const url = await getDownloadURL(snapshot.ref);
         newUrls.push(url);
       }
@@ -81,7 +91,9 @@ export const ItineraryEditorModal: React.FC<ItineraryEditorModalProps> = ({
       }));
     } catch (error) {
       console.error('Error uploading images:', error);
-      alert('Failed to upload images');
+      // Extract error message safely
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      alert(`Failed to upload images: ${errorMessage}`);
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {
