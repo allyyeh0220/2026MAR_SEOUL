@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Save, Camera, Trash2, Upload, Loader2 } from 'lucide-react';
 import { ItineraryItem } from '../data/itinerary';
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from "../firebase";
 
 interface ItineraryEditorModalProps {
   isOpen: boolean;
@@ -62,24 +64,20 @@ export const ItineraryEditorModal: React.FC<ItineraryEditorModalProps> = ({
     if (!files || files.length === 0) return;
 
     setIsUploading(true);
-    const uploadData = new FormData();
-    // Use a simple loop to avoid type inference issues with Array.from on FileList in some environments
-    for (let i = 0; i < files.length; i++) {
-      uploadData.append('photos', files[i]);
-    }
+    const newUrls: string[] = [];
 
     try {
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: uploadData,
-      });
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const storageRef = ref(storage, `images/${Date.now()}-${file.name}`);
+        const snapshot = await uploadBytes(storageRef, file);
+        const url = await getDownloadURL(snapshot.ref);
+        newUrls.push(url);
+      }
 
-      if (!response.ok) throw new Error('Upload failed');
-
-      const data = await response.json();
       setFormData(prev => ({
         ...prev,
-        images: [...(prev.images || []), ...data.urls]
+        images: [...(prev.images || []), ...newUrls]
       }));
     } catch (error) {
       console.error('Error uploading images:', error);

@@ -19,6 +19,8 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
+import { collection, getDocs, doc, setDoc, deleteDoc, writeBatch } from 'firebase/firestore';
+import { db } from '../firebase';
 
 import { itineraryData as initialItineraryData, ItineraryItem } from '../data/itinerary';
 import { SortableItineraryItem } from './SortableItineraryItem';
@@ -54,30 +56,44 @@ export function ItineraryView() {
     }
   }, [currentDayIndex]);
 
-  // Fetch data from API on mount
+  // Fetch data from Firestore on mount
   useEffect(() => {
-    fetch('/api/itinerary')
-      .then(res => res.json())
-      .then(items => {
-        setItinerary(prev => {
-          return prev.map(day => {
-            // Filter items for this day
-            const dayItems = items.filter((i: any) => i.day === day.day);
-            // Sort by sortOrder
-            dayItems.sort((a: any, b: any) => a.sortOrder - b.sortOrder);
-            
-            // If we have items from DB, use them. Otherwise keep initial (though DB should be seeded)
-            // Actually, since we seeded the DB, we should always use DB items if available.
-            // If DB returns empty for a day (e.g. user deleted all), it should be empty.
-            // But on first load if DB was just seeded, it matches initial.
-            return {
-              ...day,
-              items: dayItems
-            };
+    const fetchData = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "itinerary"));
+
+        if (querySnapshot.empty) {
+          // Seed data if empty
+          const batch = writeBatch(db);
+          initialItineraryData.forEach(day => {
+            day.items.forEach((item, index) => {
+              const docRef = doc(db, "itinerary", item.id);
+              batch.set(docRef, { ...item, day: day.day, sortOrder: index });
+            });
           });
-        });
-      })
-      .catch(err => console.error("Failed to load itinerary from API", err));
+          await batch.commit();
+          setItinerary(initialItineraryData);
+        } else {
+          // Parse data
+          const items = querySnapshot.docs.map(doc => doc.data());
+          setItinerary(prev => {
+            return prev.map(day => {
+              const dayItems = items.filter((i: any) => i.day === day.day);
+              // Sort is already done by query, but good to be safe or if we change query
+              dayItems.sort((a: any, b: any) => a.sortOrder - b.sortOrder);
+              return {
+                ...day,
+                items: dayItems as ItineraryItem[]
+              };
+            });
+          });
+        }
+      } catch (err) {
+        console.error("Failed to load itinerary from Firestore", err);
+      }
+    };
+
+    fetchData();
   }, []);
 
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
@@ -147,8 +163,8 @@ export function ItineraryView() {
         return newItinerary;
       });
 
-      // API Call
-      fetch(`/api/itinerary/${active.id}`, { method: 'DELETE' })
+      // Firestore Delete
+      deleteDoc(doc(db, "itinerary", active.id as string))
         .catch(err => console.error("Failed to delete item", err));
       return;
     }
@@ -166,13 +182,13 @@ export function ItineraryView() {
         day.items = newItems;
         newItinerary[currentDayIndex] = day;
         
-        // API Call for reorder
-        const itemIds = newItems.map(i => i.id);
-        fetch('/api/itinerary/reorder', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ day: day.day, itemIds })
-        }).catch(err => console.error("Failed to reorder", err));
+        // Firestore Reorder
+        const batch = writeBatch(db);
+        newItems.forEach((item, index) => {
+            const ref = doc(db, "itinerary", item.id);
+            batch.update(ref, { sortOrder: index });
+        });
+        batch.commit().catch(err => console.error("Failed to reorder", err));
 
         return newItinerary;
       });
@@ -227,19 +243,16 @@ export function ItineraryView() {
       return newItinerary;
     });
 
-    // API Call
+    // Firestore Save
+    const itemToSave = { ...item, day: currentDay.day };
+    
     if (isNew) {
-        fetch('/api/itinerary', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ day: currentDay.day, item })
-        }).catch(err => console.error("Failed to create item", err));
+        const newSortOrder = currentDay.items.length; // Append to end
+        setDoc(doc(db, "itinerary", item.id), { ...itemToSave, sortOrder: newSortOrder })
+            .catch(err => console.error("Failed to create item", err));
     } else {
-        fetch(`/api/itinerary/${item.id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ item })
-        }).catch(err => console.error("Failed to update item", err));
+        setDoc(doc(db, "itinerary", item.id), itemToSave, { merge: true })
+            .catch(err => console.error("Failed to update item", err));
     }
   };
 
