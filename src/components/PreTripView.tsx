@@ -33,8 +33,14 @@ const ChecklistSection: React.FC<ChecklistSectionProps> = ({ title, cardTitle, i
       id: Date.now().toString(),
       text: newItemText.trim(),
       completed: false,
-      category: categories ? newCategory : (defaultCategory || undefined)
     };
+
+    if (categories) {
+      newItem.category = newCategory;
+    } else if (defaultCategory) {
+      newItem.category = defaultCategory;
+    }
+
     onUpdate([...items, newItem]);
     setNewItemText('');
     setIsAdding(false);
@@ -264,10 +270,21 @@ export function PreTripView() {
     // Optimistic update
     setData(newData);
     
-    try {
-      await updateDoc(doc(db, 'pre_trip_data', 'lists'), {
-        [listType]: newItems
+    // Sanitize items to remove undefined values which Firestore rejects
+    const sanitizedItems = newItems.map(item => {
+      const cleanItem = { ...item };
+      Object.keys(cleanItem).forEach(key => {
+        if (cleanItem[key as keyof ListItem] === undefined) {
+          delete cleanItem[key as keyof ListItem];
+        }
       });
+      return cleanItem;
+    });
+
+    try {
+      await setDoc(doc(db, 'pre_trip_data', 'lists'), {
+        [listType]: sanitizedItems
+      }, { merge: true });
     } catch (error) {
       console.error("Error updating list:", error);
     }
@@ -275,7 +292,7 @@ export function PreTripView() {
 
   const updateCategoryList = (category: string, newCategoryItems: ListItem[]) => {
     // Filter out items that belong to this category (or are undefined if category is '其他')
-    const otherItems = data.packing.filter(item => {
+    const otherItems = (data.packing || []).filter(item => {
       const itemCat = item.category || '其他';
       return itemCat !== category;
     });
@@ -295,7 +312,7 @@ export function PreTripView() {
       category: newPackingCategory
     };
     
-    const updatedList = [...data.packing, newItem];
+    const updatedList = [...(data.packing || []), newItem];
     updateList('packing', updatedList);
     
     setNewPackingItemText('');
@@ -317,7 +334,7 @@ export function PreTripView() {
         <div className="mt-4">
           <ChecklistSection 
             title="行前檢查" 
-            items={data.todo} 
+            items={data.todo || []} 
             onUpdate={(items) => updateList('todo', items)} 
           />
         </div>
@@ -370,7 +387,7 @@ export function PreTripView() {
           {PACKING_CATEGORIES.map(category => {
             // Filter items for this category
             // For '其他', include items with '其他' or undefined/null category
-            const categoryItems = data.packing.filter(item => {
+            const categoryItems = (data.packing || []).filter(item => {
               const itemCat = item.category || '其他';
               return itemCat === category;
             });
