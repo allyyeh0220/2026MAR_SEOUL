@@ -1,9 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Save, Camera, Trash2, Upload, Loader2 } from 'lucide-react';
+import { X, Save } from 'lucide-react';
 import { ItineraryItem } from '../data/itinerary';
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { storage } from "../firebase";
 
 interface ItineraryEditorModalProps {
   isOpen: boolean;
@@ -28,10 +26,6 @@ export const ItineraryEditorModal: React.FC<ItineraryEditorModalProps> = ({
     notes: '',
     images: []
   });
-
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -58,96 +52,6 @@ export const ItineraryEditorModal: React.FC<ItineraryEditorModalProps> = ({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-
-    setIsUploading(true);
-    setUploadProgress(0);
-    const newUrls: string[] = [];
-    let successCount = 0;
-    let failCount = 0;
-
-    try {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        
-        // Basic validation
-        if (file.size > 5 * 1024 * 1024) { // 5MB limit
-          alert(`File ${file.name} is too large (max 5MB). Skipping.`);
-          continue;
-        }
-
-        if (!file.type.startsWith('image/')) {
-          alert(`File ${file.name} is not an image. Skipping.`);
-          continue;
-        }
-
-        const storageRef = ref(storage, `images/${Date.now()}-${Math.random().toString(36).substring(2, 9)}-${file.name}`);
-        
-        try {
-          // Use uploadBytesResumable for better reliability
-          const uploadTask = uploadBytesResumable(storageRef, file, {
-            contentType: file.type,
-          });
-
-          // Wait for upload to complete
-          await new Promise<void>((resolve, reject) => {
-            uploadTask.on('state_changed',
-              (snapshot) => {
-                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                setUploadProgress(Math.round(progress));
-              },
-              (error) => {
-                console.error("Upload error:", error);
-                reject(error);
-              },
-              () => {
-                resolve();
-              }
-            );
-          });
-
-          const url = await getDownloadURL(storageRef);
-          newUrls.push(url);
-          successCount++;
-        } catch (err) {
-          console.error(`Failed to upload ${file.name}:`, err);
-          failCount++;
-        }
-      }
-
-      if (newUrls.length > 0) {
-        setFormData(prev => ({
-          ...prev,
-          images: [...(prev.images || []), ...newUrls]
-        }));
-      }
-
-      if (failCount > 0) {
-        alert(`Uploaded ${successCount} images. Failed to upload ${failCount} images. Please try again.`);
-      }
-
-    } catch (error) {
-      console.error('Error in upload process:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      alert(`Upload failed: ${errorMessage}`);
-    } finally {
-      setIsUploading(false);
-      setUploadProgress(0);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    }
-  };
-
-  const handleRemoveImage = (indexToRemove: number) => {
-    setFormData(prev => ({
-      ...prev,
-      images: prev.images?.filter((_, index) => index !== indexToRemove)
-    }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -246,54 +150,6 @@ export const ItineraryEditorModal: React.FC<ItineraryEditorModalProps> = ({
                   placeholder="Short description..."
                   className="w-full p-3 bg-white border border-k-coffee/10 rounded-xl focus:outline-none focus:border-k-coffee/30 font-sans"
                 />
-              </div>
-
-              {/* Photos Upload */}
-              <div>
-                <label className="block text-xs font-bold text-k-coffee/60 mb-2 uppercase tracking-wider">Photos</label>
-                
-                {/* Image Preview Grid */}
-                {formData.images && formData.images.length > 0 && (
-                  <div className="grid grid-cols-3 gap-2 mb-3">
-                    {formData.images.map((url, index) => (
-                      <div key={index} className="relative aspect-square rounded-lg overflow-hidden group">
-                        <img src={url} alt={`Upload ${index}`} className="w-full h-full object-cover" />
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveImage(index)}
-                          className="absolute top-1 right-1 p-1 bg-black/50 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Upload Button */}
-                <div className="flex items-center gap-2">
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleImageUpload}
-                    multiple
-                    accept="image/*"
-                    className="hidden"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploading}
-                    className="flex items-center gap-2 px-4 py-2 bg-white border border-k-coffee/10 rounded-xl text-k-coffee/70 hover:bg-gray-50 transition-colors text-sm font-medium w-full justify-center"
-                  >
-                    {isUploading ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Camera className="w-4 h-4" />
-                    )}
-                    {isUploading ? 'Uploading...' : 'Add Photos'}
-                  </button>
-                </div>
               </div>
 
               {/* Notes */}
