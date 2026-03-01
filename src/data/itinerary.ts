@@ -79,9 +79,10 @@ export const itineraryData: DaySchedule[] = [
     date: "2026-03-24",
     weekday: "週二",
     heroImages: [
-      { url: "https://search.pstatic.net/common/?src=https%3A%2F%2Fpup-review-phinf.pstatic.net%2FMjAyNTEyMjdfMTA1%2FMDAxNzY2ODQyMTA5NzIw.-rlz1_ai4OjX5fhYULQFyoD2KtEt8YydgJOjZfVQOLAg.jXjL9XvjlpMa8lpmAuxB39-dCx69FQ9_D20bgka2ozkg.JPEG%2F13368.jpg.jpg%3Ftype%3Dw1500_60_sharpen", caption: "明洞" },
+      { url: "https://alinalife.tw/wp-content/uploads/2018/08/DSCF6958.jpg", caption: "明洞大聖堂" },
       { url: "https://search.pstatic.net/common/?src=https%3A%2F%2Fblogfiles.pstatic.net%2FMjAyNTA2MTJfMTUz%2FMDAxNzQ5Njk5MjM0MTg4.HFI39xkWftv3jAgPYXcNgvd5eN1suqj9JxVls8-ifqYg.Ul8jA8LFvvF_v-A7V_FZqwiFP4rX6oagiKq5cOn36FYg.JPEG%2FIMG%EF%BC%BF1326.jpg%2F900x1200", caption: "解放村" },
-      { url: "https://search.pstatic.net/common/?src=https%3A%2F%2Fpup-review-phinf.pstatic.net%2FMjAyNjAyMjBfMTgx%2FMDAxNzcxNTgxMjUwODIz.J0aQZce4yNfFBPH7q5HNmkfP-Y8Kd6qYru6L96Bul6Mg.qc3619rJJ97MrtUzgAVLYVYfMp9C48QeHfInfKNdHBAg.JPEG%2F21380.jpg.jpg%3Ftype%3Dw1500_60_sharpen", caption: "清溪川" }
+      { url: "https://search.pstatic.net/common/?src=https%3A%2F%2Fpup-review-phinf.pstatic.net%2FMjAyNjAyMjBfMTgx%2FMDAxNzcxNTgxMjUwODIz.J0aQZce4yNfFBPH7q5HNmkfP-Y8Kd6qYru6L96Bul6Mg.qc3619rJJ97MrtUzgAVLYVYfMp9C48QeHfInfKNdHBAg.JPEG%2F21380.jpg.jpg%3Ftype%3Dw1500_60_sharpen", caption: "清溪川" },
+      { url: "https://search.pstatic.net/common/?src=https%3A%2F%2Fpup-review-phinf.pstatic.net%2FMjAyNTEyMjdfMTA1%2FMDAxNzY2ODQyMTA5NzIw.-rlz1_ai4OjX5fhYULQFyoD2KtEt8YydgJOjZfVQOLAg.jXjL9XvjlpMa8lpmAuxB39-dCx69FQ9_D20bgka2ozkg.JPEG%2F13368.jpg.jpg%3Ftype%3Dw1500_60_sharpen", caption: "明洞" }
     ],
     items: [
       {
@@ -401,6 +402,7 @@ export const itineraryData: DaySchedule[] = [
         title: "行程：安國站逛街",
         type: "sight",
         location: "Anguk Station",
+        images: ["https://lh3.googleusercontent.com/gps-cs-s/AHVAwepHgN9SrEfT60r2JUe3fgWGvwffQ8fsXx9h_Od-sBq77s2RV-HfMhVmZohg7Au0lxz7bkhTf-iTuYBzIAVZAFECDktCwVHpoHyxQ3YaWsDGrA_lnVZafLa_5Sl1II7EGYYKxerc=w1024"],
         shoppingList: [
           "GRANHAND",
           "TOUT Y EST",
@@ -413,7 +415,8 @@ export const itineraryData: DaySchedule[] = [
         title: "行程：北村韓屋 (북촌한옥마을)",
         type: "sight",
         location: "Bukchon Hanok Village",
-        koreanAddress: "서울 종로구 계동길 37"
+        koreanAddress: "서울 종로구 계동길 37",
+        images: ["https://lh3.googleusercontent.com/gps-cs-s/AHVAweqjBwem5sCFJxddihjifFAnJBcyPPyj33TE1St0EHYIZ1p1vGSAlzpDllKIhIL0xXYlj8Xb7VZ0BOxUINCftK0ncAfeMrD5JwFdgTFNqWpN4aCR9irUPNBJUZgitbzTDR-9TIucfg=w1024"]
       },
       {
         id: "d2-7",
@@ -434,7 +437,8 @@ export const itineraryData: DaySchedule[] = [
         title: "行程：西巡邏街 & 益善洞韓屋村",
         type: "sight",
         location: "Ikseon-dong Hanok Village",
-        koreanAddress: "서울 종로구 익선동"
+        koreanAddress: "서울 종로구 익선동",
+        images: ["https://lh3.googleusercontent.com/gps-cs-s/AHVAweq8--uvof6qrhgiW22jFV-b5KbSXcUmsV8CnBKYCNyMlsx9z9MHhWO7XGMSoYDB7KVkvPPgbce2VCAPHWSPkWpMf4JCzGTaOwXgz0KOd0CYG11VaOAPKeoMDeXb5oxzYxt0ayz5=w1024"]
       },
       {
         id: "d2-9",
@@ -510,6 +514,7 @@ export const itineraryData: DaySchedule[] = [
         type: "shopping",
         location: "Seongsu-dong Cafe Street",
         koreanAddress: "서울 성동구 성수동",
+        images: ["https://travel-tw.line-scdn.net/r/travel/content/21a700b4-a024-4e20-b8f1-ab50ef41b15bt1365c12f"],
         shoppingList: [
           "KHIHO SEONGSU STORE",
           "Beidelli 女裝",
@@ -556,7 +561,8 @@ export const itineraryData: DaySchedule[] = [
         title: "行程：首爾林野餐 (서울숲)",
         type: "activity",
         location: "Seoul Forest",
-        koreanAddress: "서울 성동구 뚝섬로 273"
+        koreanAddress: "서울 성동구 뚝섬로 273",
+        images: ["https://lh5.googleusercontent.com/proxy/2OS7e3Ir3G9ZlhIg5cBK9YxY1IJLeyelBqMG6a1ZZvqh53SzUev0iE-mxJSzE8dS-EzomjSE7h0blK95yRibFA73CzHCi1qlXWJKRQ"]
       },
       {
         id: "d3-7",
@@ -583,6 +589,7 @@ export const itineraryData: DaySchedule[] = [
         location: "Jinokhwa Halmae Wonjo Dakhanmari",
         koreanAddress: "서울 종로구 종로40가길 18",
         naverMapLink: "https://naver.me/xQe2wLdj",
+        images: ["https://www.bring-you.info/imgs/2019/01/dongdaemun-3-900x600.jpg"],
         highlight: ["必吃美食"],
         menuRecommendations: [
           { nameCN: "一隻雞", nameKR: "닭한마리", price: "33,000 KRW" },
@@ -661,7 +668,8 @@ export const itineraryData: DaySchedule[] = [
         title: "行程：水聲洞溪谷 (수성동계곡)",
         type: "sight",
         location: "Suseong-dong Valley",
-        koreanAddress: "서울 종로구 옥인동 185-3"
+        koreanAddress: "서울 종로구 옥인동 185-3",
+        images: ["https://tong.visitkorea.or.kr/cms/resource/10/2780610_image2_1.png"]
       },
       {
         id: "d4-4",
@@ -683,6 +691,7 @@ export const itineraryData: DaySchedule[] = [
         description: "弼雲洞 洪建翊家屋、青瓦台文藝館、保安旅館、Ground Seesaw展覽",
         location: "Seochon Village",
         koreanAddress: "서울 종로구 필운대로",
+        images: ["https://tong.visitkorea.or.kr/cms/resource_etc/76/3113276_image2_1.jpg"],
         notes: "洪建翊家屋: https://naver.me/x0UEt1xe, 青瓦台文藝館: https://naver.me/xY4sobj8, 保安旅館: https://naver.me/53lKU0do, Ground Seesaw: https://naver.me/GEXhmVi6",
         shoppingList: [
           "0fr. Séoul 書店",
@@ -720,6 +729,7 @@ export const itineraryData: DaySchedule[] = [
         location: "N Seoul Tower",
         koreanAddress: "서울 용산구 남산공원길 105",
         naverMapLink: "https://naver.me/xGIPHFHB",
+        images: ["https://blog-static.kkday.com/zh-tw/blog/wp-content/uploads/2022/09/Korea_Seoul_N-Seoul-Tower_Ashutterstock_779041270.jpg"],
         notes: "纜車: https://naver.me/FZ27W9Px"
       }
     ]
@@ -770,6 +780,7 @@ export const itineraryData: DaySchedule[] = [
         type: "sight",
         location: "Mangwon Market",
         koreanAddress: "서울 마포구 망원동",
+        images: ["https://tchinese.seoul.go.kr/wp-content/uploads/2020/08/mangwon-market-4.jpg", "https://tchinese.seoul.go.kr/wp-content/uploads/2017/09/Mangwon_dong_1.jpg"],
         shoppingList: [
           "Warmgreytail 可愛毛巾店",
           "Viva Salon玩具小店",
@@ -819,6 +830,7 @@ export const itineraryData: DaySchedule[] = [
         title: "行程：延南洞逛街",
         type: "shopping",
         location: "Yeonnam-dong",
+        images: ["https://rainieis.tw/wp-content/uploads/2024/03/DSC01908.jpg"],
         shoppingList: [
           "mill and moi 밀앤모이狗狗文創店",
           "VISUAL AID 女裝",
@@ -924,7 +936,8 @@ export const itineraryData: DaySchedule[] = [
         time: "13:00",
         title: "行程：弘大最後買東西",
         type: "shopping",
-        location: "Hongdae Shopping Street"
+        location: "Hongdae Shopping Street",
+        images: ["https://rainieis.tw/wp-content/uploads/DSC02019.jpg"]
       },
       {
         id: "d6-4",
