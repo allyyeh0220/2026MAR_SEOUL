@@ -85,8 +85,10 @@ export function GuideModal({ item, isOpen, onClose, onEdit }: GuideModalProps) {
   const displayLabel = isFlight ? 'FLIGHT' : label;
   const displayColor = isFlight ? 'bg-[#cdc8c3]' : color;
 
-  // Only show images if explicitly provided
-  const displayImages = item.images || [];
+  // Only show images if explicitly provided, fallback to single image if array not present
+  const displayImages = item.images && item.images.length > 0 
+    ? item.images 
+    : (item.image ? [item.image] : []);
 
   return (
     <AnimatePresence>
@@ -388,6 +390,16 @@ export function GuideModal({ item, isOpen, onClose, onEdit }: GuideModalProps) {
                   </p>
                 )}
               </div>
+              )}
+
+              {/* 4. Notes */}
+              {item.notes && (
+                <div className="mt-8 pt-8 border-t border-k-coffee/10">
+                  <h3 className="text-sm font-bold text-k-coffee/40 uppercase tracking-widest mb-4">Notes</h3>
+                  <p className="text-k-coffee/80 leading-relaxed font-medium whitespace-pre-wrap bg-yellow-50/50 p-4 rounded-xl border border-yellow-100/50">
+                    {item.notes}
+                  </p>
+                </div>
               )}
 
               {/* Navigation Button (Bottom Fixed or Inline) - Removed as it's now at the top */}
