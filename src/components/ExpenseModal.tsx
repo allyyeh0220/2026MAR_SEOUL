@@ -169,6 +169,10 @@ export const ExpenseModal: React.FC<ExpenseModalProps> = ({ isOpen, onClose }) =
     }, 0);
   }, [filteredExpenses]);
 
+  const TOTAL_BUDGET = 50000;
+  const remainingBudget = TOTAL_BUDGET - totalTWD;
+  const percentageUsed = (totalTWD / TOTAL_BUDGET) * 100;
+
   const handleSaveExpense = async () => {
     if (!newTitle || !newAmount) return;
     
@@ -258,6 +262,24 @@ export const ExpenseModal: React.FC<ExpenseModalProps> = ({ isOpen, onClose }) =
 
             {!isAdding ? (
               <>
+                {/* Budget Progress */}
+                <div className="bg-white p-4 rounded-[15px] border border-k-coffee/10 shadow-sm mb-4 shrink-0">
+                  <div className="flex justify-between items-end mb-2">
+                    <span className="text-xs font-bold text-k-coffee/60">預算 (NT$ {TOTAL_BUDGET.toLocaleString()})</span>
+                    <span className={`text-sm font-bold font-mono ${remainingBudget < 0 ? 'text-red-500' : 'text-k-coffee'}`}>
+                      剩餘: ${Math.round(remainingBudget).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="h-2.5 bg-k-coffee/5 rounded-full overflow-hidden">
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.min(percentageUsed, 100)}%` }}
+                      transition={{ duration: 1, ease: "easeOut" }}
+                      className={`h-full rounded-full ${remainingBudget < 0 ? 'bg-red-500' : 'bg-k-coffee'}`}
+                    />
+                  </div>
+                </div>
+
                 {/* Total Card */}
                 <div className="bg-k-coffee text-white p-6 shadow-lg mb-6 relative overflow-hidden shrink-0">
                   <div className="relative z-10">
